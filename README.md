@@ -11,7 +11,7 @@ A farm advisory built on the [WeatherAI](https://weather-ai.co) API. It turns a
 Every verdict shows the measurements behind it, so it can be checked rather
 than trusted.
 
-**Live:** _(deployment link)_
+**Live:** https://weather-ai-advisory.vercel.app
 
 ---
 
