@@ -1,36 +1,57 @@
 @import "tailwindcss";
 
+/*
+ * "Calm & trustworthy" — a warm, agronomic palette that should read like a
+ * well-made field guide, not a dashboard. Cream and sand grounds, a deep
+ * growing-green as the brand, amber for caution and an earthen clay for stop —
+ * warnings that feel agricultural rather than alarms on a control panel.
+ */
 :root {
-  --background: #fbfaf7;
+  --background: #faf7f0;
   --surface: #ffffff;
-  --surface-muted: #f3f1ec;
-  --foreground: #1c1a17;
-  --muted: #6b665e;
-  --border: #e2ded5;
+  --surface-muted: #f2ede2;
+  --foreground: #23201a;
+  --muted: #6e665a;
+  --border: #e6dfd1;
+  --border-strong: #d8cfbc;
 
-  --good: #1f7a4d;
-  --good-bg: #e6f4ec;
-  --marginal: #a86a10;
-  --marginal-bg: #fbf1dd;
-  --poor: #a3342c;
-  --poor-bg: #fbe9e7;
+  --brand: #2e5d3a;
+  --brand-weak: #e8f0e8;
+  --on-brand: #f7f4ec;
+
+  --good: #2e6b43;
+  --good-bg: #e7f0e7;
+  --marginal: #955f10;
+  --marginal-bg: #f6edd8;
+  --poor: #a13c29;
+  --poor-bg: #f5e4dd;
+
+  --shadow-soft: 0 1px 2px rgba(35, 32, 26, 0.04), 0 4px 16px rgba(35, 32, 26, 0.05);
+  --radius: 1rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #14130f;
-    --surface: #1d1b17;
-    --surface-muted: #24221d;
-    --foreground: #f0ece3;
-    --muted: #a09a8e;
-    --border: #34302a;
+    --background: #17150f;
+    --surface: #201d16;
+    --surface-muted: #29251c;
+    --foreground: #efe9dc;
+    --muted: #a79e8c;
+    --border: #37322a;
+    --border-strong: #443e33;
 
-    --good: #6cc294;
-    --good-bg: #16301f;
-    --marginal: #e0aa53;
-    --marginal-bg: #33260f;
-    --poor: #e58a80;
-    --poor-bg: #331815;
+    --brand: #82ba8e;
+    --brand-weak: #1c2c1f;
+    --on-brand: #16210f;
+
+    --good: #82c090;
+    --good-bg: #182f1e;
+    --marginal: #e0ae5f;
+    --marginal-bg: #322409;
+    --poor: #e59079;
+    --poor-bg: #331a12;
+
+    --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 20px rgba(0, 0, 0, 0.35);
   }
 }
 
@@ -41,6 +62,11 @@
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-brand: var(--brand);
+  --color-brand-weak: var(--brand-weak);
+  --color-on-brand: var(--on-brand);
 
   --color-good: var(--good);
   --color-good-bg: var(--good-bg);
@@ -49,12 +75,24 @@
   --color-poor: var(--poor);
   --color-poor-bg: var(--poor-bg);
 
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-lora), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-sans);
+  /* Subtle woven texture so cream grounds do not read as flat gray. */
+  background-image: radial-gradient(rgba(46, 93, 58, 0.025) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Utility: soft card surface used across the product. */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
 }

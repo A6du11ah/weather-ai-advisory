@@ -16,6 +16,8 @@ interface FieldSummary {
   drying: Verdict;
   spray: Verdict;
   stage: string | null;
+  progress: number | null;
+  daysToHarvest: number | null;
   nextTask: FieldTask | null;
 }
 
@@ -74,21 +76,21 @@ export default function FarmDashboard({ farmKey }: { farmKey: string }) {
           <Link href="/" className="text-sm text-muted underline-offset-2 hover:underline">
             ← Home
           </Link>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl">
+          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
             {data?.farm.name ?? "My farm"}
           </h1>
         </div>
       </header>
 
       {loading && !data && (
-        <div className="mt-6 h-40 animate-pulse rounded-xl border border-border bg-surface-muted motion-reduce:animate-none" />
+        <div className="mt-6 h-40 animate-pulse rounded-2xl border border-border bg-surface-muted motion-reduce:animate-none" />
       )}
 
       {data && (
         <>
           {data.tasks.length > 0 && (
-            <section className="mt-6 rounded-xl border border-border bg-surface-muted p-5">
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">
+            <section className="mt-6 rounded-2xl border border-brand/20 bg-brand-weak p-5">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-brand/80">
                 This week
               </h2>
               <ul className="mt-2 space-y-1.5">
@@ -106,15 +108,19 @@ export default function FarmDashboard({ farmKey }: { farmKey: string }) {
             </section>
           )}
 
-          <div className="mt-6 flex items-center justify-between">
-            <h2 className="text-base font-semibold">
+          <div className="mt-8 flex items-center justify-between">
+            <h2 className="font-display text-xl font-semibold">
               Fields{" "}
               <span className="font-normal text-muted">({data.fields.length})</span>
             </h2>
             <button
               type="button"
               onClick={() => setShowAdd((v) => !v)}
-              className="min-h-[44px] cursor-pointer rounded-lg border border-border bg-surface px-4 text-sm font-medium hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+              className={`min-h-[44px] cursor-pointer rounded-xl px-4 text-sm font-semibold transition-opacity focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+                showAdd
+                  ? "border border-border bg-surface hover:bg-surface-muted"
+                  : "bg-brand text-on-brand hover:opacity-90"
+              }`}
             >
               {showAdd ? "Close" : "Add field"}
             </button>
@@ -135,11 +141,11 @@ export default function FarmDashboard({ farmKey }: { farmKey: string }) {
               <li key={f.id}>
                 <Link
                   href={`/farm/${farmKey}/field/${f.id}`}
-                  className="block rounded-xl border border-border bg-surface p-5 transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+                  className="card block p-5 transition-shadow hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <h3 className="font-semibold">{f.name}</h3>
+                      <h3 className="font-display text-lg font-semibold">{f.name}</h3>
                       <p className="text-sm text-muted">
                         {f.cropName}
                         {f.stage && ` · ${f.stage}`}
@@ -150,6 +156,23 @@ export default function FarmDashboard({ farmKey }: { farmKey: string }) {
                       <VerdictPill label="Spray" verdict={f.spray} />
                     </div>
                   </div>
+
+                  {f.progress !== null && (
+                    <div className="mt-3">
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-muted">
+                        <div
+                          className="h-full rounded-full bg-brand"
+                          style={{ width: `${Math.round(f.progress * 100)}%` }}
+                        />
+                      </div>
+                      {f.daysToHarvest !== null && f.daysToHarvest > 0 && (
+                        <p className="mt-1 text-xs text-muted">
+                          {f.daysToHarvest} days to harvest
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   <p className="mt-3 text-sm">{f.headline}</p>
                   {f.nextTask && (
                     <p className="mt-1 text-xs text-muted">

@@ -126,12 +126,12 @@ export function AdvisoryCard({
   children?: React.ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-border bg-surface">
-      <div className={`h-1 w-full ${VERDICT[verdict].bar}`} aria-hidden="true" />
+    <section className="card overflow-hidden">
+      <div className={`h-1.5 w-full ${VERDICT[verdict].bar}`} aria-hidden="true" />
       <div className="p-5 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-base font-semibold">{title}</h2>
+            <h2 className="font-display text-lg font-semibold">{title}</h2>
             <p className="mt-0.5 text-sm text-muted">{question}</p>
           </div>
           <VerdictBadge verdict={verdict} />
@@ -158,8 +158,8 @@ export function ChangesBanner({ changes }: { changes: AdvisoryChange[] }) {
   return (
     <section
       aria-live="polite"
-      className={`rounded-xl border p-4 sm:p-5 ${
-        urgent ? "border-marginal/40 bg-marginal-bg" : "border-border bg-surface"
+      className={`rounded-2xl border p-4 sm:p-5 ${
+        urgent ? "border-marginal/40 bg-marginal-bg" : "card"
       }`}
     >
       <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">
@@ -180,8 +180,8 @@ export function ChangesBanner({ changes }: { changes: AdvisoryChange[] }) {
 export function ForecastStrip({ days }: { days: DayPoint[] }) {
   const maxRain = Math.max(1, ...days.map((d) => d.precipMm));
   return (
-    <section className="rounded-xl border border-border bg-surface p-5 sm:p-6">
-      <h2 className="text-base font-semibold">7-day outlook</h2>
+    <section className="card p-5 sm:p-6">
+      <h2 className="font-display text-lg font-semibold">7-day outlook</h2>
       <div className="mt-4 -mx-1 overflow-x-auto px-1 pb-1">
         <ul className="flex min-w-max gap-2">
           {days.map((d) => (

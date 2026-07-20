@@ -82,30 +82,34 @@ export default function AdvisoryView() {
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:py-12">
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+      <header className="pt-4 sm:pt-8">
+        <p className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand-weak px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand">
+          <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden="true" />
           Field Window
+        </p>
+        <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-balance sm:text-5xl">
+          Your season, one field at a time.
         </h1>
-        <p className="mt-2 max-w-xl text-muted">
-          Weather-driven decisions for your fields: when the harvest can dry
-          safely, and when spraying will not be washed off.
+        <p className="mt-4 max-w-xl text-lg leading-relaxed text-muted">
+          A weather companion that follows each field from planting to storage —
+          knows its crop, its stage, and what you&rsquo;ve done — and gives you
+          the two decisions that actually move the season: when to dry, and when
+          to spray.
         </p>
       </header>
 
-      <div className="mt-6">
+      <div className="mt-8">
         <FarmEntry />
       </div>
 
-      <div className="mt-8">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
-          Or explore a demo location
-        </h2>
+      <div className="mt-12 border-t border-border pt-8">
+        <h2 className="font-display text-xl font-semibold">See it without an account</h2>
         <p className="mt-1 text-sm text-muted">
-          No account needed — see the advisory for a fixed set of places.
+          A live advisory for a fixed set of demo locations.
         </p>
       </div>
 
-      <div className="mt-4 space-y-4">
+      <div className="mt-5 space-y-4">
         <ChipRow
           legend="Location"
           items={PRESETS.map((p) => ({ id: p.id, label: p.name, sublabel: p.country }))}

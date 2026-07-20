@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import type { AdvisoryPayload } from "@/lib/advisory";
 import type { FieldContext, FieldNote } from "@/lib/field-context";
 import type { ForecastOrigin } from "@/lib/forecast-source";
+import type { SeasonTimeline as Season } from "@/lib/growth";
 import { AdvisoryBody } from "@/app/_components/advisory-body";
+import { SeasonTimeline } from "@/app/_components/season-timeline";
 
 interface Activity {
   id: number;
@@ -25,6 +27,7 @@ interface FieldData {
   };
   advisory: AdvisoryPayload;
   context: FieldContext;
+  season: Season | null;
   meta: { origin: ForecastOrigin; ageHours: number | null };
   activities: Activity[];
 }
@@ -109,7 +112,7 @@ export default function FieldDetail({
         <>
           <header className="mt-3 flex items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
                 {data.field.name}
               </h1>
               <p className="mt-1 text-muted">
@@ -121,29 +124,41 @@ export default function FieldDetail({
             <button
               type="button"
               onClick={removeField}
-              className="min-h-[44px] shrink-0 cursor-pointer rounded-lg border border-border px-3 text-sm text-muted hover:text-poor"
+              className="min-h-[44px] shrink-0 cursor-pointer rounded-lg border border-border px-3 text-sm text-muted transition-colors hover:border-poor/40 hover:text-poor"
             >
               Delete
             </button>
           </header>
 
-          {/* Personalised context — what this field needs, above the raw advisory. */}
+          {/* The season journey — the centre of gravity for this field. */}
+          {data.season && (
+            <div className="mt-6">
+              <SeasonTimeline
+                season={data.season}
+                activities={data.activities}
+                tasks={data.context.tasks}
+                today={data.advisory.days[0]?.date ?? ""}
+              />
+            </div>
+          )}
+
+          {/* What this field needs now. */}
           {data.context.notes.length > 0 && (
-            <section className="mt-6 space-y-2">
+            <section className="mt-4 space-y-2">
               {data.context.notes.map((n, i) => (
-                <p key={i} className={`rounded-lg border px-4 py-3 text-sm ${NOTE_STYLE[n.tone]}`}>
+                <p key={i} className={`rounded-2xl border px-4 py-3 text-sm ${NOTE_STYLE[n.tone]}`}>
                   {n.text}
                 </p>
               ))}
             </section>
           )}
 
-          <div className="mt-6">
+          <div className="mt-4">
             <AdvisoryBody
               payload={data.advisory}
               changes={[]}
               meta={
-                <footer className="rounded-xl border border-border bg-surface px-5 py-4 text-xs text-muted">
+                <footer className="card px-5 py-4 text-xs text-muted">
                   <p>
                     Forecast {data.meta.origin}
                     {data.meta.ageHours !== null && ` · ${data.meta.ageHours}h old`}.

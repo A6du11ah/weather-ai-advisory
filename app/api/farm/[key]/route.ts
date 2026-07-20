@@ -31,6 +31,11 @@ export async function GET(
       try {
         const activities = await listActivities(f.id);
         const view = await composeField(f, activities, { withAi });
+        const g = view.context.growth;
+        const progress =
+          g.hasCalendar && g.daysAfterPlanting !== null && g.daysToHarvest !== null
+            ? Math.max(0, Math.min(1, g.daysAfterPlanting / (g.daysAfterPlanting + g.daysToHarvest)))
+            : null;
         return {
           id: f.id,
           name: f.name,
@@ -39,6 +44,8 @@ export async function GET(
           drying: view.advisory.advisories.drying.best?.verdict ?? "poor",
           spray: view.advisory.advisories.spray.best?.verdict ?? "poor",
           stage: view.context.growth.stage?.label ?? null,
+          progress,
+          daysToHarvest: g.daysToHarvest,
           nextTask: view.context.tasks[0] ?? null,
         };
       } catch {

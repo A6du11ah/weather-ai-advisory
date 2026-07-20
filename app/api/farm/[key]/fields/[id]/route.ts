@@ -10,6 +10,7 @@ import {
   listActivities,
 } from "@/lib/db/farms";
 import { composeField } from "@/lib/farm-view";
+import { seasonTimeline } from "@/lib/growth";
 
 export async function GET(
   _request: NextRequest,
@@ -27,8 +28,10 @@ export async function GET(
 
   try {
     const view = await composeField(field, activities, { withAi });
+    const today = view.advisory.days[0]?.date ?? "";
     return Response.json({
       ...view,
+      season: seasonTimeline(field.cropId, field.plantingDate, today),
       activities: activities.map((a) => ({
         id: a.id,
         kind: a.kind,

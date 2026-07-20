@@ -55,17 +55,17 @@ export default function FarmEntry() {
   }
 
   return (
-    <section className="rounded-xl border border-border bg-surface p-5 sm:p-6">
-      <h2 className="text-base font-semibold">Your farm</h2>
+    <section className="card p-5 sm:p-6">
+      <h2 className="font-display text-xl font-semibold">Start your farm</h2>
       <p className="mt-1 text-sm text-muted">
-        Save your fields and crops, log what you do, and get advisories tuned to
+        Add your fields and crops, log what you do, and get advisories tuned to
         each field&rsquo;s stage — not just the weather.
       </p>
 
       {savedKey && (
         <a
           href={`/farm/${savedKey}`}
-          className="mt-4 flex min-h-[44px] items-center justify-center rounded-lg bg-foreground px-4 text-sm font-medium text-background"
+          className="mt-4 flex min-h-[48px] items-center justify-center rounded-xl bg-brand px-4 text-sm font-semibold text-on-brand transition-opacity hover:opacity-90"
         >
           Open my farm →
         </a>
@@ -82,7 +82,11 @@ export default function FarmEntry() {
           type="button"
           onClick={createFarm}
           disabled={busy}
-          className="min-h-[44px] cursor-pointer rounded-lg border border-border bg-surface px-4 text-sm font-medium hover:bg-surface-muted disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+          className={`min-h-[44px] cursor-pointer rounded-xl px-4 text-sm font-semibold transition-opacity disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+            savedKey
+              ? "border border-border bg-surface hover:bg-surface-muted"
+              : "bg-brand text-on-brand hover:opacity-90"
+          }`}
         >
           {busy ? "Creating…" : savedKey ? "Create another" : "Create a farm"}
         </button>

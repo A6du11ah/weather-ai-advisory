@@ -1,24 +1,35 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Lora, Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Lora: a warm literary serif for display — the "field guide" voice.
+const lora = Lora({
+  variable: "--font-lora",
   subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+});
+
+// Inter: rock-solid UI and numerals, legible on a cheap screen.
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.SITE_URL ?? "https://weather-ai-advisory.vercel.app",
   ),
-  title: "Field Window — grain drying & spray advisories",
+  title: "Field Window — your season, one field at a time",
   description:
-    "Turns a 7-day forecast into two farm decisions: when to dry grain safely, and when to spray without losing the application to rain. Built on the WeatherAI API.",
+    "A weather-driven companion for a working farm. Track each field from planting to storage, know its stage, and get the two decisions that matter: when to dry and when to spray.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -29,8 +40,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fbfaf7" },
-    { media: "(prefers-color-scheme: dark)", color: "#14130f" },
+    { media: "(prefers-color-scheme: light)", color: "#faf7f0" },
+    { media: "(prefers-color-scheme: dark)", color: "#17150f" },
   ],
 };
 
@@ -42,7 +53,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${lora.variable} ${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

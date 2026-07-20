@@ -34,12 +34,12 @@ export function AdvisoryBody({
     <div className="space-y-4">
       <section
         aria-live="polite"
-        className="rounded-xl border border-border bg-surface-muted p-5 sm:p-6"
+        className="rounded-2xl border border-brand/20 bg-brand-weak p-5 sm:p-6"
       >
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+        <p className="text-xs font-semibold uppercase tracking-wide text-brand/80">
           {payload.placeName} · {payload.crop.name} · today
         </p>
-        <p className="mt-2 text-lg font-semibold leading-snug text-balance sm:text-xl">
+        <p className="mt-2 font-display text-xl font-semibold leading-snug text-balance sm:text-2xl">
           {payload.headline}
         </p>
       </section>
@@ -47,7 +47,7 @@ export function AdvisoryBody({
       <ChangesBanner changes={changes} />
 
       {payload.aiSummary && (
-        <section className="rounded-xl border border-border bg-surface p-5">
+        <section className="card p-5">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-muted">
             Forecast summary
           </h2>

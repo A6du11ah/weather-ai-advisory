@@ -161,3 +161,65 @@ export function growthState(
 export function hasCalendar(cropId: string): boolean {
   return cropId in CALENDARS;
 }
+
+export interface StageMilestone {
+  key: string;
+  label: string;
+  note: string;
+  /** Day-after-planting this stage begins. */
+  day: number;
+  /** Calendar date this stage begins, ISO. */
+  date: string;
+  status: "past" | "current" | "future";
+}
+
+export interface SeasonTimeline {
+  plantingDate: string;
+  estimatedHarvest: string;
+  daysAfterPlanting: number;
+  daysToHarvest: number;
+  /** Fraction of the season elapsed, 0–1, clamped. */
+  progress: number;
+  stages: StageMilestone[];
+}
+
+/**
+ * The full stage calendar for a field, with dates and past/current/future
+ * status. This is what the season timeline renders — the crop's whole journey
+ * from planting to harvest, not just where it is today.
+ *
+ * Returns null when there is no calendar or no planting date, since without
+ * either there is no journey to draw.
+ */
+export function seasonTimeline(
+  cropId: string,
+  plantingDate: string | null,
+  today: string,
+): SeasonTimeline | null {
+  const cal = CALENDARS[cropId];
+  if (!cal || !plantingDate) return null;
+
+  const dap = daysBetween(plantingDate, today);
+  const currentKey =
+    [...cal.stages].reverse().find((s) => dap >= s.startDay)?.key ??
+    cal.stages[0].key;
+
+  const stages: StageMilestone[] = cal.stages.map((s) => ({
+    key: s.key,
+    label: s.label,
+    note: s.note,
+    day: s.startDay,
+    date: addDays(plantingDate, s.startDay),
+    status:
+      s.key === currentKey ? "current" : dap >= s.startDay ? "past" : "future",
+  }));
+
+  return {
+    plantingDate,
+    estimatedHarvest: addDays(plantingDate, cal.daysToHarvest),
+    daysAfterPlanting: dap,
+    daysToHarvest: cal.daysToHarvest - dap,
+    progress: Math.max(0, Math.min(1, dap / cal.daysToHarvest)),
+    stages,
+  };
+}
