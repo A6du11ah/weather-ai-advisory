@@ -66,3 +66,24 @@ export const PRESETS: Preset[] = [
 export function findPreset(id: string): Preset | undefined {
   return PRESETS.find((p) => p.id === id);
 }
+
+/**
+ * Resolve arbitrary coordinates to a known preset, or reject them.
+ *
+ * Coordinate rounding alone does not bound quota: a caller looping over
+ * latitudes produces a fresh cache key every 0.1°, so every request becomes an
+ * upstream call and a public URL can drain a 1,000-request monthly allowance
+ * in minutes. Only allowlisted locations are fetchable.
+ *
+ * The tolerance absorbs float formatting differences between client and
+ * server without widening the surface meaningfully — 0.05° is roughly 5km,
+ * far below the spacing between presets.
+ */
+export function matchPreset(lat: number, lon: number): Preset | undefined {
+  const TOLERANCE_DEG = 0.05;
+  return PRESETS.find(
+    (p) =>
+      Math.abs(p.lat - lat) <= TOLERANCE_DEG &&
+      Math.abs(p.lon - lon) <= TOLERANCE_DEG,
+  );
+}

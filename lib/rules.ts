@@ -26,16 +26,22 @@
 
 import type { DayPoint, HourPoint } from "./types";
 import { describeCode } from "./weathercode";
+import { DEFAULT_CROP, type CropProfile } from "./crops";
 
 export const SOURCES = {
   aflatoxin: {
-    label: "Maize drying and aflatoxin risk",
-    note: "Smallholders commonly harvest maize at 18–25% moisture. Above 13%, Aspergillus proliferates and produces aflatoxin. Rain during drying causes partially dried grain to reabsorb moisture, restarting the risk.",
-    url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC9500662/",
+    label: "Maize drying and safe storage moisture (FAO)",
+    // Corrected 2026-07-20. An earlier version of this note stated "above 13%
+    // Aspergillus proliferates" — that conflates a storage-safety target with
+    // the biological growth threshold, which is considerably higher. Keeping
+    // the distinction matters: the whole premise of this tool is that a claim
+    // can be checked against the source printed beside it.
+    note: "Maize is commonly harvested at 18–25% moisture and must be dried for storage. Fungal growth largely halts below about 12–13% moisture, so ~13.5% is the usual storage target — deliberately below the level at which Aspergillus grows and produces aflatoxin. Rain during drying lets partially dried grain reabsorb moisture, undoing progress already made.",
+    url: "https://www.fao.org/4/x5036e/x5036e0s.htm",
   },
   rainfast: {
     label: "Pesticide rainfastness",
-    note: "Loss of efficacy is greatest when rain falls within 24 hours of application. At 24 hours most products tolerate roughly 25mm; around 50mm removes enough residue to force a reapplication.",
+    note: "Loss of efficacy is greatest when rain falls soon after application and diminishes as the deposit dries and is absorbed. At 24 hours most products tolerate roughly 25mm; around 50mm removes enough residue to force a reapplication.",
     url: "https://sprayers101.com/rainfastness-pesticide/",
   },
   sprayDrift: {
@@ -91,7 +97,10 @@ export interface SprayWindow {
   time: string;
   verdict: Verdict;
   score: number;
+  /** Raw rainfall total across the rainfast window. Shown to the user. */
   rainNext24hMm: number;
+  /** Time-weighted washoff — what actually drives the score. */
+  effectiveWashMm: number;
   /** True when the rainfast lookahead was partly estimated from daily totals. */
   estimated: boolean;
   evidence: Evidence[];
@@ -132,8 +141,7 @@ function isDryDay(day: DayPoint): boolean {
  * pulls moisture out of grain. A day that logged trace rain is treated as no
  * better than overcast — damp air, weak drying — rather than as a washout.
  */
-function scoreDryingDay(day: DayPoint): number {
-  const t = THRESHOLDS.drying;
+function scoreDryingDay(day: DayPoint, crop: CropProfile): number {
   if (!isDryDay(day)) return 0;
 
   const info = describeCode(day.code);
@@ -145,7 +153,7 @@ function scoreDryingDay(day: DayPoint): number {
       : info.dryingFactor;
 
   const warmth = clamp(
-    (day.tempMaxC - t.floorTempC) / (t.goodTempC - t.floorTempC),
+    (day.tempMaxC - crop.floorTempC) / (crop.goodTempC - crop.floorTempC),
     0,
     1,
   );
@@ -161,8 +169,12 @@ function scoreDryingDay(day: DayPoint): number {
  * spell is two days, and you need three" is actionable, where an empty
  * result reads as a broken page.
  */
-export function findDryingWindows(days: DayPoint[]): DryingWindow[] {
+export function findDryingWindows(
+  days: DayPoint[],
+  crop: CropProfile = DEFAULT_CROP,
+): DryingWindow[] {
   const t = THRESHOLDS.drying;
+  const minRunDays = crop.minRunDays;
   const windows: DryingWindow[] = [];
 
   let runStart = -1;
@@ -170,7 +182,7 @@ export function findDryingWindows(days: DayPoint[]): DryingWindow[] {
     if (runStart < 0) return;
     const run = days.slice(runStart, endExclusive);
 
-    const scores = run.map(scoreDryingDay);
+    const scores = run.map((d) => scoreDryingDay(d, crop));
     const score = Math.round(scores.reduce((a, b) => a + b, 0) / run.length);
     const maxTemp = Math.max(...run.map((d) => d.tempMaxC));
     const totalRain = run.reduce((a, d) => a + d.precipMm, 0);
@@ -180,7 +192,7 @@ export function findDryingWindows(days: DayPoint[]): DryingWindow[] {
     const meanSun =
       run.reduce((a, d) => a + describeCode(d.code).dryingFactor, 0) /
       run.length;
-    const sufficient = run.length >= t.minRunDays;
+    const sufficient = run.length >= minRunDays;
 
     windows.push({
       startDate: run[0].date,
@@ -193,7 +205,7 @@ export function findDryingWindows(days: DayPoint[]): DryingWindow[] {
       evidence: [
         {
           label: "Consecutive dry days",
-          value: `${run.length} of ${t.minRunDays} needed`,
+          value: `${run.length} of ${minRunDays} needed`,
           ok: sufficient,
         },
         {
@@ -204,7 +216,7 @@ export function findDryingWindows(days: DayPoint[]): DryingWindow[] {
         {
           label: "Peak temperature",
           value: `${maxTemp.toFixed(0)} °C`,
-          ok: maxTemp >= t.goodTempC,
+          ok: maxTemp >= crop.goodTempC,
         },
         {
           label: "Best conditions",
@@ -281,6 +293,32 @@ function buildPrecipTimeline(
 }
 
 /**
+ * Time-weighted washoff.
+ *
+ * The cited guidance is explicit that *when* rain falls matters more than how
+ * much: a deposit is most vulnerable immediately after application and becomes
+ * progressively rainfast as it dries and is absorbed, until by roughly 24
+ * hours most products tolerate ~25mm without losing efficacy.
+ *
+ * An earlier version summed rainfall across the window with no time term,
+ * which scored 20mm one hour after application about the same as 20mm at
+ * hour 23 — contradicting the source displayed beside the verdict in the UI.
+ *
+ * Vulnerability decays linearly from 1.0 at the moment of application to 0 at
+ * `rainfastHours`. Linear is a simplification of what is really a drying curve,
+ * but it captures the ordering the source cares about and keeps the model
+ * legible enough to argue with, which matters more here than false precision.
+ */
+function weightedWashoff(points: TimelinePoint[], appliedAt: Date): number {
+  const t = THRESHOLDS.spray;
+  return points.reduce((sum, p) => {
+    const hoursAfter = (p.time.getTime() - appliedAt.getTime()) / 3_600_000;
+    const vulnerability = clamp(1 - hoursAfter / t.rainfastHours, 0, 1);
+    return sum + p.precipMm * vulnerability;
+  }, 0);
+}
+
+/**
  * Rank spray windows.
  *
  * Only hours from now onward are considered — the API's hourly series starts
@@ -290,10 +328,18 @@ export function findSprayWindows(
   hours: HourPoint[],
   days: DayPoint[],
   now: Date = new Date(),
+  crop: CropProfile = DEFAULT_CROP,
 ): SprayWindow[] {
   const t = THRESHOLDS.spray;
   const timeline = buildPrecipTimeline(hours, days);
   const windows: SprayWindow[] = [];
+
+  // The last instant we have any precipitation data for. An hour can only be
+  // scored if its entire rainfast window falls at or before this — otherwise
+  // unobserved hours are silently counted as zero rain, which turns "we don't
+  // know" into a confident recommendation.
+  const timelineEnd =
+    timeline.length > 0 ? timeline[timeline.length - 1].time : null;
 
   for (const h of hours) {
     const at = new Date(h.time);
@@ -301,16 +347,21 @@ export function findSprayWindows(
     if (h.precipMm > 0.2 || describeCode(h.code).wet) continue;
 
     const windowEnd = new Date(at.getTime() + t.rainfastHours * 3_600_000);
+    if (!timelineEnd || timelineEnd < windowEnd) continue;
+
     const inWindow = timeline.filter((p) => p.time > at && p.time <= windowEnd);
     if (inWindow.length === 0) continue;
 
     const rain24 = inWindow.reduce((sum, p) => sum + p.precipMm, 0);
+    const effectiveWashMm = weightedWashoff(inWindow, at);
     const estimated = inWindow.some((p) => p.estimated);
-    const tempOk = h.tempC >= t.minTempC && h.tempC <= t.maxTempC;
+    const tempOk =
+      h.tempC >= crop.sprayMinTempC && h.tempC <= crop.sprayMaxTempC;
 
     // Rain after application dominates: perfect temperature is worthless if
-    // the product washes off before it works.
-    const rainScore = clamp(1 - rain24 / t.washoffMm, 0, 1);
+    // the product washes off before it works. Scoring uses the time-weighted
+    // figure, not the raw total — see weightedWashoff().
+    const rainScore = clamp(1 - effectiveWashMm / t.washoffMm, 0, 1);
     const score = Math.round(100 * (0.8 * rainScore + 0.2 * (tempOk ? 1 : 0.3)));
 
     windows.push({
@@ -318,12 +369,18 @@ export function findSprayWindows(
       score,
       verdict: verdictFromScore(score),
       rainNext24hMm: rain24,
+      effectiveWashMm,
       estimated,
       evidence: [
         {
           label: `Rain in next ${t.rainfastHours}h`,
           value: `${rain24.toFixed(1)} mm${estimated ? " (est.)" : ""}`,
           ok: rain24 < t.washoffMm,
+        },
+        {
+          label: "Washing effect (time-weighted)",
+          value: `${effectiveWashMm.toFixed(1)} mm`,
+          ok: effectiveWashMm < t.washoffMm,
         },
         {
           label: "Temperature at application",
@@ -347,16 +404,51 @@ export function bestSprayWindowPerDay(
   hours: HourPoint[],
   days: DayPoint[],
   now?: Date,
+  crop: CropProfile = DEFAULT_CROP,
 ): SprayWindow[] {
   const byDay = new Map<string, SprayWindow>();
 
-  for (const w of findSprayWindows(hours, days, now)) {
+  for (const w of findSprayWindows(hours, days, now, crop)) {
     const day = w.time.slice(0, 10);
     const existing = byDay.get(day);
     if (!existing || w.score > existing.score) byDay.set(day, w);
   }
 
   return [...byDay.values()].sort((a, b) => a.time.localeCompare(b.time));
+}
+
+/**
+ * The one-line answer to "what do I do today?"
+ *
+ * The two advisory cards each answer a question well, but neither answers the
+ * question a farmer actually arrives with. Without this, the user has to read
+ * both cards and infer the conclusion — which is exactly the cognitive work
+ * the product exists to remove.
+ */
+export function todayHeadline(
+  drying: DryingWindow | null,
+  spray: SprayWindow | null,
+  today: string,
+): string {
+  const dryingStartsToday = drying?.startDate === today;
+  const sprayIsToday = spray?.time.slice(0, 10) === today && spray.verdict !== "poor";
+
+  if (dryingStartsToday && sprayIsToday) {
+    return "Spread grain to dry today, and spraying is viable — check wind before you go.";
+  }
+  if (dryingStartsToday) {
+    return "Good drying starts today. Spread the harvest.";
+  }
+  if (sprayIsToday) {
+    return "No drying window today, but spraying is viable.";
+  }
+  if (drying) {
+    return `Nothing to do today. The next drying window opens ${drying.startDate}.`;
+  }
+  if (spray && spray.verdict !== "poor") {
+    return `Nothing to do today. Next viable spray window is ${spray.time.slice(0, 10)}.`;
+  }
+  return "Nothing to do today, and nothing viable in the 7-day outlook. Keep the harvest covered.";
 }
 
 /**

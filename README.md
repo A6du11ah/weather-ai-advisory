@@ -20,15 +20,25 @@ than trusted.
 Weather apps answer "what will it be like?" A farmer needs "what should I do?"
 Both questions use the same data; only the second is worth acting on.
 
-**Drying.** Smallholders commonly harvest maize at 18–25% moisture and must
-reach below 13%, above which *Aspergillus* proliferates and produces
-aflatoxin — a carcinogen that has caused mass poisoning events and gets whole
-harvests condemned. The critical detail for a forecast-driven tool is that
-rain mid-drying makes partially dried grain **reabsorb moisture**, restarting
-the risk. So the question is not "will it rain tomorrow" but "do I have three
-consecutive dry days." Aflatoxin costs African economies an estimated **$670M
-per year in lost trade**, and adoption of proper drying sits at just 17.8%.
-([Toxins, 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC9500662/))
+**Drying.** Maize is commonly harvested at 18–25% moisture and dried for
+storage. Fungal growth largely halts below about 12–13% moisture, so ~13.5% is
+the usual storage target — deliberately set below the level at which
+*Aspergillus* grows and produces aflatoxin, a carcinogen that has caused mass
+poisoning events and gets whole harvests condemned. The detail that makes this
+a forecast problem is that rain mid-drying lets partially dried grain
+**reabsorb moisture**, undoing progress already made. So the question is not
+"will it rain tomorrow" but "do I have a long enough unbroken dry spell."
+Aflatoxin costs African economies an estimated **$670M per year in lost trade**,
+and adoption of proper drying sits at just 17.8%.
+([FAO](https://www.fao.org/4/x5036e/x5036e0s.htm),
+[Toxins, 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC9500662/))
+
+> An earlier version of this README and of `SOURCES.aflatoxin` stated "above
+> 13%, *Aspergillus* proliferates." That conflated a storage-safety target with
+> the biological growth threshold, which is higher. It is corrected above and
+> in the code. Noting it rather than quietly editing: the premise of this tool
+> is that a claim can be checked against the source printed beside it, so a bad
+> citation is the most serious kind of defect it can have.
 
 **Spraying.** Pesticide efficacy loss is greatest when rain falls **within 24
 hours** of application. At 24 hours most products tolerate roughly 25mm; around
@@ -97,8 +107,26 @@ you need three" is actionable where an empty result looks like a bug.
 
 **Spraying.** Candidate hours are dry hours from now onward. The dominant term
 is rain *after* application, since a perfect temperature reading is worthless
-if the product washes off. Only the best window per day is shown, so the UI
-offers a spread of options instead of six consecutive hours of one afternoon.
+if the product washes off.
+
+Crucially, washoff is **time-weighted**. The cited guidance says *when* rain
+falls matters more than how much — a deposit is most vulnerable immediately
+after application and becomes progressively rainfast as it dries. An earlier
+version summed rainfall flat across the window, which scored 20mm one hour
+after application about the same as 20mm at hour 23, contradicting the source
+displayed directly beneath the verdict. `weightedWashoff()` now decays
+vulnerability from 1.0 at application to 0 at 24 hours. Both the raw total and
+the weighted figure are shown, so the adjustment is visible rather than hidden.
+
+An hour is only scored if its **entire** rainfast window is covered by
+available data. Otherwise unobserved hours count as zero rain, which silently
+converts "we don't know" into a confident recommendation — a bug caught by
+`lib/rules.test.ts` rather than by inspection.
+
+**Crop selection** re-scores the same cached forecast against different
+thresholds (`lib/crops.ts`) — wheat clears a 2-day window that maize fails and
+coffee needs five. It costs **zero** additional API requests, which is what
+makes it affordable personalisation on the free tier.
 
 ---
 
@@ -118,17 +146,37 @@ lib/
   places.ts             demo locations
 ```
 
-**Quota protection.** The free plan allows 1,000 requests/month, which a public
-deployment can burn through quickly. Coordinates are rounded to ~10km before
-becoming a cache key, so nearby requests share one upstream call; forecasts are
-cached for an hour. Expired entries are **kept**, and if upstream then fails or
-returns 429 the stale copy is served with a visible "showing last known
-forecast" notice. A demo that degrades to slightly-old data beats one that
-shows a stack trace.
+**Quota protection.** The free plan allows 1,000 requests/month — about 33 per
+day for everything combined. Three things keep the deployment inside it:
 
-This is per-instance memory, so serverless gets one cache per warm lambda
-rather than a shared one. Fine at this scale; production would use Redis or
-Vercel KV.
+1. **Only allowlisted locations are fetchable** (`matchPreset`). Coordinate
+   rounding alone does not bound quota: a caller sweeping latitudes mints a
+   fresh cache key every 0.1°, so every request becomes an upstream call and a
+   public URL becomes a way to drain the key in minutes. Unknown coordinates
+   now return 400 with the available list.
+2. **TTLs sized against the quota, not against freshness.** 6h for forecasts,
+   12h for usage. The earlier values (1h and 5min) worked out to ~3,600 and up
+   to ~8,640 calls/month respectively — each individually more than the entire
+   monthly allowance. At current settings the five presets cost
+   `5 × 4 × 30 = 600` calls/month, plus ~60 for usage.
+3. **Stale-on-failure, but bounded.** Expired entries are kept and served if
+   upstream fails, with the age shown in the footer — but refused past 36h,
+   because a forecast old enough that its early days have elapsed would
+   recommend a window that already started.
+
+Cache is per-instance, so serverless gets one per warm lambda rather than a
+shared one. Acceptable at this scale; production would use Redis or Vercel KV.
+
+## Tests
+
+```bash
+npm test
+```
+
+17 tests over the rules engine (`lib/rules.test.ts`), covering the regressions
+that motivated them: trace rain miscoded as drizzle splitting a valid drying
+run, time-weighted versus flat washoff, near-miss reporting, past-hour
+exclusion, incomplete-lookahead refusal, and quota allowlisting.
 
 ---
 
