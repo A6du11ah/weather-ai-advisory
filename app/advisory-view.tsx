@@ -9,6 +9,7 @@ import type { AdvisoryChange } from "@/lib/diff";
 import type { Usage } from "@/lib/types";
 import { AdvisoryBody } from "./_components/advisory-body";
 import { ChipRow } from "./_components/controls";
+import FarmEntry from "./_components/farm-entry";
 
 interface ApiResponse extends AdvisoryPayload {
   changes: AdvisoryChange[];
@@ -86,12 +87,25 @@ export default function AdvisoryView() {
           Field Window
         </h1>
         <p className="mt-2 max-w-xl text-muted">
-          Two decisions from one forecast: when the harvest can dry safely, and
-          when spraying will not be washed off.
+          Weather-driven decisions for your fields: when the harvest can dry
+          safely, and when spraying will not be washed off.
         </p>
       </header>
 
-      <div className="mt-6 space-y-4">
+      <div className="mt-6">
+        <FarmEntry />
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+          Or explore a demo location
+        </h2>
+        <p className="mt-1 text-sm text-muted">
+          No account needed — see the advisory for a fixed set of places.
+        </p>
+      </div>
+
+      <div className="mt-4 space-y-4">
         <ChipRow
           legend="Location"
           items={PRESETS.map((p) => ({ id: p.id, label: p.name, sublabel: p.country }))}

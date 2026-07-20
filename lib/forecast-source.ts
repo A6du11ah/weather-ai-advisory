@@ -110,3 +110,57 @@ export async function resolvePreviousForecast(
   const row = await getPreviousSnapshot(stationId, localDate);
   return row?.forecast ?? null;
 }
+
+/**
+ * Resolve a forecast for an arbitrary field location.
+ *
+ * Unlike the preset stations, user fields are not gated by `matchPreset` and
+ * are not pre-fetched by cron — they are cached by rounded coordinate and
+ * fetched live on a miss. Access is bounded elsewhere (a farm holds at most a
+ * handful of fields), which is the scalability trade this feature accepts.
+ */
+export async function resolveForecastByCoords(
+  lat: number,
+  lon: number,
+  opts: { withAi: boolean },
+): Promise<ResolvedForecast> {
+  const key = cache.cacheKey([
+    "field",
+    cache.roundCoord(lat),
+    cache.roundCoord(lon),
+  ]);
+
+  const cached = cache.getFresh<Forecast>(key);
+  if (cached) {
+    return {
+      forecast: cached,
+      origin: "cache",
+      ageHours: null,
+      localDate: cached.days[0]?.date ?? "",
+    };
+  }
+
+  try {
+    const forecast = await fetchForecast({ lat, lon, days: 7, withAi: opts.withAi });
+    cache.set(key, forecast, cache.TTL.forecast);
+    return {
+      forecast,
+      origin: "live",
+      ageHours: null,
+      localDate: forecast.days[0]?.date ?? "",
+    };
+  } catch (err) {
+    const stale = cache.getStale<Forecast>(key);
+    if (stale) {
+      return {
+        forecast: stale.value,
+        origin: "stale",
+        ageHours: Math.round((stale.ageSeconds / 3600) * 10) / 10,
+        localDate: stale.value.days[0]?.date ?? "",
+      };
+    }
+    throw err instanceof WeatherAIError
+      ? err
+      : new WeatherAIError(String(err), 500, false);
+  }
+}

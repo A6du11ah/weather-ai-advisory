@@ -1,12 +1,24 @@
 # Field Window
 
-A farm advisory built on the [WeatherAI](https://weather-ai.co) API. It turns a
-7-day forecast into two decisions rather than a wall of numbers:
+A weather-driven companion for a working farm, built on the
+[WeatherAI](https://weather-ai.co) API. The forecast is the engine; the product
+is what wraps around it.
 
-- **Grain drying** — is there a run of days dry and sunny enough to bring maize
-  below the moisture level at which aflatoxin develops?
-- **Spraying** — is there an hour to apply after which no washing rain falls
-  inside the product's rainfast period?
+Two things sit on top:
+
+**The demo** — pick a location and crop, get two decisions rather than a wall of
+numbers:
+- **Grain drying** — is there a run of rain-free days long enough to dry the
+  crop below the moisture at which aflatoxin develops?
+- **Spraying** — is there a daylit hour to apply after which no washing rain
+  falls inside the product's rainfast period?
+
+**Your farm** — create a farm (no sign-up; a private link), add your real
+**fields** with their crop and planting date, and **log what you do** — sprays,
+harvests. The advisory then speaks about *that field*: its growth stage, days
+since the last spray, how close it is to harvest, and a this-week task list
+across all your fields. That is the difference between a viewer and a product —
+the weather API is central, but it is no longer the only thing the app knows.
 
 Every verdict shows the measurements behind it, so it can be checked rather
 than trusted.
@@ -142,13 +154,15 @@ turns that into a loud failure naming the offending field.
 
 ```
 app/
-  page.tsx                     home (client, interactive)
+  page.tsx                     home: farm entry + demo (client)
+  farm/[key]/                  farm dashboard + field detail (private, per-key)
   s/[station]/                 server-rendered, shareable per-location pages + OG image
-  api/advisory/route.ts        first-party endpoint (DB-backed when configured)
+  api/farm/…                   farm/field/activity CRUD + per-field advisory
+  api/advisory/route.ts        demo endpoint (DB-backed when configured)
   api/v1/advisory/[station]/   versioned public contract (CORS, stable shape)
   api/v1/openapi.json/         OpenAPI 3 description of that contract
   api/cron/refresh/            scheduled writer — the only path that spends quota
-  _components/                 shared advisory UI (home and station pages agree)
+  _components/                 shared advisory UI (every surface agrees)
 lib/
   weatherai.ts    API client; the only file that knows the upstream shape
   validate.ts     zod validation of the upstream payload
@@ -158,12 +172,37 @@ lib/
   solar.ts        NOAA sunrise/sunset; daylight gate for spray hours
   diff.ts         day-over-day change detection
   crops.ts        per-crop thresholds
+  growth.ts       planting date → growth stage, harvest window, PHI
+  field-context.ts  fuses field + activity log + advisory into guidance
+  farm-view.ts    composes a field's forecast, advisory, and context
   weathercode.ts  WMO code → drying effectiveness
   cache.ts        in-memory TTL cache with bounded stale fallback
-  places.ts       stations
-  forecast-source.ts  resolves snapshot → cache → live → stale
-  db/             Drizzle schema, Neon client, snapshot + quota-ledger queries
+  places.ts       demo stations
+  forecast-source.ts  resolves snapshot → cache → live → stale (+ by-coords)
+  db/             Drizzle schema + queries: snapshots, quota, farms/fields/activities
 ```
+
+### The product layer: farms, fields, a field log
+
+The demo runs anonymously on five fixed stations. The **farm** is the real
+product, and it needs a database (`DATABASE_URL`):
+
+- **Auth is a share link, not a password.** Creating a farm mints an unguessable
+  key; the farm lives at `/farm/{key}` and holding the key is holding the
+  account. Chosen over email/password because the target user is on a cheap
+  phone with no patience for a signup wall — and it is honest about what this is.
+  Proper auth would layer on top without changing the data model.
+- **Fields are at real coordinates**, not presets — the point at which the app
+  stops being a demo over fixed stations. Field weather is resolved live and
+  cached by coordinate (`resolveForecastByCoords`) rather than pre-fetched by
+  cron; that is the scalability trade the build deliberately accepts, bounded by
+  a per-farm field cap.
+- **The activity log is what makes it a product.** `lib/growth.ts` places the
+  crop on a stage calendar from its planting date; `lib/field-context.ts` fuses
+  that with the log and the weather advisory to say things the raw forecast
+  cannot — "grain fill, 21 days to harvest, start lining up a drying window,"
+  "sprayed 4 days ago," "within the pre-harvest interval, check the label." Each
+  field rolls a next-task up to a farm-wide this-week list.
 
 ### The fetch inversion (persistence)
 
@@ -223,13 +262,16 @@ shared one. Acceptable at this scale; production would use Redis or Vercel KV.
 npm test
 ```
 
-79 tests across the pure logic: the rules engine (`lib/rules.test.ts`), solar
-geometry including polar day/night (`lib/solar.test.ts`), payload validation
-(`lib/validate.test.ts`), and day-over-day diffing including the
-elapsed-versus-retracted distinction (`lib/diff.test.ts`). Several encode
-regressions found during development — trace rain miscoded as drizzle splitting
-a valid run, flat versus time-weighted washoff, an hour scored on an
-incomplete rainfast window.
+104 tests across the pure logic: the rules engine (`lib/rules.test.ts`), solar
+geometry including polar day/night and the equation of time
+(`lib/solar.test.ts`), payload validation including impossible dates
+(`lib/validate.test.ts`), day-over-day diffing including the
+elapsed-versus-retracted distinction (`lib/diff.test.ts`), the crop
+growth-stage model (`lib/growth.test.ts`), and the field-context engine that
+personalises an advisory from a field's log (`lib/field-context.test.ts`).
+Several encode regressions found during development — trace rain miscoded as
+drizzle splitting a valid run, flat versus time-weighted washoff, an hour scored
+on an incomplete rainfast window.
 
 ## Optional: enabling persistence
 
