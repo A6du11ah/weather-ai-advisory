@@ -36,10 +36,10 @@ export function ChipRow({
       <div className="mt-2 flex flex-wrap gap-2">
         {items.map((item) => {
           const active = item.id === activeId;
-          const cls = `min-h-[44px] inline-flex items-center cursor-pointer rounded-full border px-4 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground ${
+          const cls = `min-h-[44px] inline-flex items-center cursor-pointer rounded-full border px-4 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring ${
             active
-              ? "border-transparent bg-foreground text-background"
-              : "border-border bg-surface hover:bg-surface-muted"
+              ? "border-transparent bg-brand text-on-brand shadow-sm"
+              : "border-border bg-surface text-ink-body hover:bg-surface-muted"
           }`;
           const inner = (
             <>

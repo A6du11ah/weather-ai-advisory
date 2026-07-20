@@ -1,84 +1,157 @@
 @import "tailwindcss";
 
 /*
- * "Calm & trustworthy" — a warm, agronomic palette that should read like a
- * well-made field guide, not a dashboard. Cream and sand grounds, a deep
- * growing-green as the brand, amber for caution and an earthen clay for stop —
- * warnings that feel agricultural rather than alarms on a control panel.
+ * Field Window design tokens — "calm & trustworthy" with depth.
+ *
+ * Three rules fix the earlier pale/flat look:
+ *   1. The canvas (--background/--field) is DEEPER than cards (--surface). You
+ *      cannot lift a card by making it whiter than a near-white page, so the
+ *      page is a warm mid-cream and cards are near-white that genuinely rise.
+ *   2. Shadows are warm umber and two-layered (contact + ambient), never
+ *      black-alpha, which on cream reads as muddy grey.
+ *   3. Every tint is paired with a solid rule/icon/fill of the same hue — a
+ *      tint alone always reads grey.
+ *
+ * The public class names are unchanged (surface, foreground, muted, good, …)
+ * so every component gains the depth at once; only their values are richer.
  */
 :root {
-  --background: #faf7f0;
-  --surface: #ffffff;
-  --surface-muted: #f2ede2;
-  --foreground: #23201a;
-  --muted: #6e665a;
-  --border: #e6dfd1;
-  --border-strong: #d8cfbc;
+  --field: #f1ead9; /* the canvas — deeper than cards */
+  --background: #f1ead9;
+  --surface: #fbf7ee; /* resting card */
+  --surface-raised: #ffffff; /* the single top elevation — white as a signal */
+  --surface-muted: #ece3d0; /* recessed wells, zebra */
+  --foreground: #23271f;
+  --ink-body: #3a3f33;
+  --muted: #6b6e5f;
+  --ink-faint: #8c8b7a;
+  --border: #e0d5bf;
+  --border-strong: #cdbf9f;
 
   --brand: #2e5d3a;
-  --brand-weak: #e8f0e8;
-  --on-brand: #f7f4ec;
+  --brand-deep: #234a2e;
+  --brand-mid: #3c7a4b;
+  --brand-weak: #eef3ea;
+  --brand-tint: #dde8da;
+  --on-brand: #f4f1e6;
 
-  --good: #2e6b43;
-  --good-bg: #e7f0e7;
-  --marginal: #955f10;
-  --marginal-bg: #f6edd8;
-  --poor: #a13c29;
-  --poor-bg: #f5e4dd;
+  --amber: #c8811e;
+  --amber-deep: #a5670f;
+  --amber-tint: #f6e8ce;
+  --on-amber: #2a1d06;
 
-  --rain: #5f7f9e;
+  --good: #2e7d46;
+  --good-bg: #dcebdd;
+  --good-ink: #16391f;
+  --marginal: #c8811e;
+  --marginal-bg: #f6e8ce;
+  --marginal-ink: #5a3a0a;
+  --poor: #b4462e;
+  --poor-bg: #f5e0d8;
+  --poor-ink: #5a2013;
 
-  --shadow-soft: 0 1px 2px rgba(35, 32, 26, 0.04), 0 4px 16px rgba(35, 32, 26, 0.05);
-  --radius: 1rem;
+  --rain: #37698a;
+  --rain-track: #e7ddc9;
+
+  --focus-ring: #c8811e;
+  --shadow: 61, 49, 21;
+
+  --e1: 0 1px 2px rgba(var(--shadow), 0.05), 0 2px 6px rgba(var(--shadow), 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --e2: 0 1px 2px rgba(var(--shadow), 0.05), 0 4px 10px rgba(var(--shadow), 0.06),
+    0 12px 24px -8px rgba(var(--shadow), 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  --e3: 0 2px 4px rgba(var(--shadow), 0.06), 0 8px 20px rgba(var(--shadow), 0.1),
+    0 24px 48px -12px rgba(var(--shadow), 0.14);
+
+  --radius: 1.25rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #17150f;
-    --surface: #201d16;
-    --surface-muted: #29251c;
-    --foreground: #efe9dc;
-    --muted: #a79e8c;
-    --border: #37322a;
-    --border-strong: #443e33;
+    --field: #14170f;
+    --background: #14170f;
+    --surface: #1c2016;
+    --surface-raised: #242a1d;
+    --surface-muted: #10130b;
+    --foreground: #f2eedf;
+    --ink-body: #d8d3c2;
+    --muted: #a5a491;
+    --ink-faint: #7e7e6c;
+    --border: #333a28;
+    --border-strong: #47503a;
 
-    --brand: #82ba8e;
-    --brand-weak: #1c2c1f;
-    --on-brand: #16210f;
+    --brand: #6fb07e;
+    --brand-deep: #4e9060;
+    --brand-mid: #82c091;
+    --brand-weak: #1b2417;
+    --brand-tint: #223020;
+    --on-brand: #0e1a10;
 
-    --good: #82c090;
-    --good-bg: #182f1e;
-    --marginal: #e0ae5f;
-    --marginal-bg: #322409;
-    --poor: #e59079;
-    --poor-bg: #331a12;
+    --amber: #e0a94a;
+    --amber-deep: #e0a94a;
+    --amber-tint: #33280f;
+    --on-amber: #1a1204;
 
-    --rain: #89a6c2;
+    --good: #63b879;
+    --good-bg: #1b2e1e;
+    --good-ink: #bfe3c6;
+    --marginal: #e0a94a;
+    --marginal-bg: #33280f;
+    --marginal-ink: #f0d49a;
+    --poor: #d97a5e;
+    --poor-bg: #331c14;
+    --poor-ink: #f3c4b4;
 
-    --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 20px rgba(0, 0, 0, 0.35);
+    --rain: #5e9bbe;
+    --rain-track: #262b1c;
+
+    --focus-ring: #e0a94a;
+    --shadow: 0, 0, 0;
+
+    --e1: 0 0 0 1px var(--border), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    --e2: 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    --e3: 0 8px 28px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.07);
   }
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-field: var(--field);
   --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
   --color-surface-muted: var(--surface-muted);
   --color-foreground: var(--foreground);
+  --color-ink-body: var(--ink-body);
   --color-muted: var(--muted);
+  --color-ink-faint: var(--ink-faint);
   --color-border: var(--border);
   --color-border-strong: var(--border-strong);
 
   --color-brand: var(--brand);
+  --color-brand-deep: var(--brand-deep);
+  --color-brand-mid: var(--brand-mid);
   --color-brand-weak: var(--brand-weak);
+  --color-brand-tint: var(--brand-tint);
   --color-on-brand: var(--on-brand);
+
+  --color-amber: var(--amber);
+  --color-amber-deep: var(--amber-deep);
+  --color-amber-tint: var(--amber-tint);
+  --color-on-amber: var(--on-amber);
 
   --color-good: var(--good);
   --color-good-bg: var(--good-bg);
+  --color-good-ink: var(--good-ink);
   --color-marginal: var(--marginal);
   --color-marginal-bg: var(--marginal-bg);
+  --color-marginal-ink: var(--marginal-ink);
   --color-poor: var(--poor);
   --color-poor-bg: var(--poor-bg);
+  --color-poor-ink: var(--poor-ink);
   --color-rain: var(--rain);
+  --color-rain-track: var(--rain-track);
+  --color-focus-ring: var(--focus-ring);
 
   --font-display: var(--font-lora), Georgia, serif;
   --font-sans: var(--font-inter), system-ui, sans-serif;
@@ -86,33 +159,53 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--field);
+  color: var(--ink-body);
   font-family: var(--font-sans);
-  /* Subtle woven texture so cream grounds do not read as flat gray. */
-  background-image: radial-gradient(rgba(46, 93, 58, 0.025) 1px, transparent 1px);
-  background-size: 22px 22px;
+  /* Faint warm contour texture so the cream canvas is never a flat void. */
+  background-image: radial-gradient(
+    ellipse at 50% -10%,
+    rgba(46, 93, 58, 0.05),
+    transparent 60%
+  );
+  background-attachment: fixed;
 }
 
-/* Utility: soft card surface used across the product. */
+/* Resting card: near-white, lifted off the deeper canvas with a warm shadow. */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--e1);
 }
 
-/*
- * Quiet horizontal scroll. The native scrollbar on Windows is a heavy gray bar
- * with arrow buttons that fights the calm palette. This replaces it with a thin
- * track that only shows a subtle thumb, and fades the right edge so it stays
- * clear there is more to scroll without a chunky control announcing it.
- */
+/* The important-result surface: pure white + stronger elevation. */
+.card-raised {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--e2);
+}
+
+.elev-1 { box-shadow: var(--e1); }
+.elev-2 { box-shadow: var(--e2); }
+.elev-3 { box-shadow: var(--e3); }
+
+/* Recessed input well — depth signals "type into me". */
+.well {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 2px rgba(var(--shadow), 0.1);
+}
+.well:focus {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+
+/* Quiet horizontal scroll — replaces the heavy native Windows scrollbar. */
 .scroll-x {
   scrollbar-width: thin;
   scrollbar-color: var(--border-strong) transparent;
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x proximity;
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0,
@@ -128,24 +221,16 @@ body {
     transparent 100%
   );
 }
-
-.scroll-x::-webkit-scrollbar {
-  height: 6px;
-}
-
-.scroll-x::-webkit-scrollbar-track {
-  background: transparent;
-}
-
+.scroll-x::-webkit-scrollbar { height: 6px; }
+.scroll-x::-webkit-scrollbar-track { background: transparent; }
 .scroll-x::-webkit-scrollbar-thumb {
   background: var(--border-strong);
   border-radius: 999px;
 }
 
-.scroll-x::-webkit-scrollbar-thumb:hover {
-  background: var(--muted);
-}
-
-.scroll-x > * {
-  scroll-snap-align: start;
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
 }

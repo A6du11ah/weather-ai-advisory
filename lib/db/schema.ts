@@ -97,6 +97,8 @@ export const fields = pgTable("fields", {
   name: text("name").notNull(),
   lat: real("lat").notNull(),
   lon: real("lon").notNull(),
+  /** Human place name from geocoding, e.g. "Bomet, Kenya". Nullable. */
+  placeName: text("place_name"),
   cropId: text("crop_id").notNull(),
   /** ISO date the crop was planted; drives growth-stage reasoning. Nullable — a user may not know it. */
   plantingDate: text("planting_date"),

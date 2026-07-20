@@ -19,6 +19,7 @@ export interface FieldView {
     name: string;
     lat: number;
     lon: number;
+    placeName: string | null;
     cropId: string;
     cropName: string;
     plantingDate: string | null;
@@ -61,6 +62,7 @@ export async function composeField(
       name: field.name,
       lat: field.lat,
       lon: field.lon,
+      placeName: field.placeName,
       cropId: field.cropId,
       cropName: crop.name,
       plantingDate: field.plantingDate,

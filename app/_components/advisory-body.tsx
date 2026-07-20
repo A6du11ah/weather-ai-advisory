@@ -34,12 +34,13 @@ export function AdvisoryBody({
     <div className="space-y-4">
       <section
         aria-live="polite"
-        className="rounded-2xl border border-brand/20 bg-brand-weak p-5 sm:p-6"
+        className="relative overflow-hidden rounded-2xl border border-brand/20 bg-brand-tint p-5 pl-6 sm:p-6 sm:pl-7"
       >
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand/80">
+        <div className="absolute inset-y-0 left-0 w-1 bg-brand" aria-hidden="true" />
+        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-brand-mid">
           {payload.placeName} · {payload.crop.name} · today
         </p>
-        <p className="mt-2 font-display text-xl font-semibold leading-snug text-balance sm:text-2xl">
+        <p className="mt-2 font-display text-xl font-semibold leading-snug text-balance text-foreground sm:text-2xl">
           {payload.headline}
         </p>
       </section>

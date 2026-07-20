@@ -5,6 +5,7 @@
 import type { NextRequest } from "next/server";
 import { addField, getFarmByKey } from "@/lib/db/farms";
 import { findCrop } from "@/lib/crops";
+import { reverseGeocode } from "@/lib/geocode";
 
 export async function POST(
   request: NextRequest,
@@ -34,7 +35,17 @@ export async function POST(
       ? body.plantingDate
       : null;
 
-  const result = await addField(farm.id, { name, lat, lon, cropId, plantingDate });
+  // Prefer a client-supplied label (from the search pick); otherwise resolve
+  // one from the coordinates so a map-dropped pin still gets a readable place.
+  let placeName =
+    typeof body.placeName === "string" && body.placeName.trim()
+      ? body.placeName.trim()
+      : null;
+  if (!placeName) {
+    placeName = await reverseGeocode(lat, lon);
+  }
+
+  const result = await addField(farm.id, { name, lat, lon, placeName, cropId, plantingDate });
   if (result && "error" in result) {
     return Response.json({ error: result.error }, { status: 409 });
   }

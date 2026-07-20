@@ -77,6 +77,7 @@ export async function addField(
     name: string;
     lat: number;
     lon: number;
+    placeName: string | null;
     cropId: string;
     plantingDate: string | null;
   },
@@ -96,6 +97,7 @@ export async function addField(
       name: input.name.trim() || "Field",
       lat: input.lat,
       lon: input.lon,
+      placeName: input.placeName,
       cropId: input.cropId,
       plantingDate: input.plantingDate,
     })

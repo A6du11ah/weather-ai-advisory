@@ -10,6 +10,7 @@ import type { Usage } from "@/lib/types";
 import { AdvisoryBody } from "./_components/advisory-body";
 import { ChipRow } from "./_components/controls";
 import FarmEntry from "./_components/farm-entry";
+import { Logo } from "./_components/logo";
 
 interface ApiResponse extends AdvisoryPayload {
   changes: AdvisoryChange[];
@@ -83,14 +84,11 @@ export default function AdvisoryView() {
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:py-12">
       <header className="pt-4 sm:pt-8">
-        <p className="inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand-weak px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand">
-          <span className="h-1.5 w-1.5 rounded-full bg-brand" aria-hidden="true" />
-          Field Window
-        </p>
-        <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-balance sm:text-5xl">
+        <Logo size={30} />
+        <h1 className="mt-6 font-display text-4xl font-semibold leading-[1.05] tracking-tight text-balance text-foreground sm:text-5xl">
           Your season, one field at a time.
         </h1>
-        <p className="mt-4 max-w-xl text-lg leading-relaxed text-muted">
+        <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-body">
           A weather companion that follows each field from planting to storage —
           knows its crop, its stage, and what you&rsquo;ve done — and gives you
           the two decisions that actually move the season: when to dry, and when

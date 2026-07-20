@@ -23,11 +23,32 @@ export interface SourceRef {
 
 export const VERDICT: Record<
   Verdict,
-  { label: string; glyph: string; chip: string; bar: string }
+  { label: string; glyph: string; chip: string; solid: string; bar: string; fill: string }
 > = {
-  good: { label: "Go", glyph: "✓", chip: "bg-good-bg text-good border-good/30", bar: "bg-good" },
-  marginal: { label: "Marginal", glyph: "!", chip: "bg-marginal-bg text-marginal border-marginal/30", bar: "bg-marginal" },
-  poor: { label: "Avoid", glyph: "✕", chip: "bg-poor-bg text-poor border-poor/30", bar: "bg-poor" },
+  good: {
+    label: "Go",
+    glyph: "✓",
+    chip: "bg-good-bg text-good border-good/30",
+    solid: "bg-good text-on-brand",
+    bar: "bg-good",
+    fill: "from-good-bg",
+  },
+  marginal: {
+    label: "Marginal",
+    glyph: "!",
+    chip: "bg-marginal-bg text-marginal border-marginal/30",
+    solid: "bg-marginal text-on-amber",
+    bar: "bg-marginal",
+    fill: "from-marginal-bg",
+  },
+  poor: {
+    label: "Avoid",
+    glyph: "✕",
+    chip: "bg-poor-bg text-poor border-poor/30",
+    solid: "bg-poor text-on-brand",
+    bar: "bg-poor",
+    fill: "from-poor-bg",
+  },
 };
 
 export function fmtDate(iso: string): string {
@@ -47,9 +68,11 @@ export function fmtDayTime(iso: string): string {
 
 export function VerdictBadge({ verdict }: { verdict: Verdict }) {
   const v = VERDICT[verdict];
+  // Filled at full saturation — the verdict is the payload, so it is
+  // deliberately the loudest thing on the card.
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wide ${v.chip}`}
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] shadow-sm ${v.solid}`}
     >
       <span aria-hidden="true">{v.glyph}</span>
       {v.label}
@@ -125,23 +148,28 @@ export function AdvisoryCard({
   sources: SourceRef[];
   children?: React.ReactNode;
 }) {
+  const v = VERDICT[verdict];
   return (
-    <section className="card overflow-hidden">
-      <div className={`h-1.5 w-full ${VERDICT[verdict].bar}`} aria-hidden="true" />
-      <div className="p-5 sm:p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 className="font-display text-lg font-semibold">{title}</h2>
-            <p className="mt-0.5 text-sm text-muted">{question}</p>
+    <section className="card-raised relative overflow-hidden">
+      {/* Verdict as a left spine + a fill that fades from the top — colour is
+          structure, not a lonely rail. */}
+      <div className={`absolute inset-y-0 left-0 w-[5px] ${v.bar}`} aria-hidden="true" />
+      <div className={`bg-gradient-to-b ${v.fill} to-40% to-transparent`}>
+        <div className="p-5 pl-6 sm:p-6 sm:pl-7">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 className="font-display text-xl font-semibold leading-tight">{title}</h2>
+              <p className="mt-0.5 text-sm text-muted">{question}</p>
+            </div>
+            <VerdictBadge verdict={verdict} />
           </div>
-          <VerdictBadge verdict={verdict} />
+          <p className="mt-4 font-display text-xl font-semibold leading-snug text-balance text-foreground sm:text-2xl">
+            {headline}
+          </p>
+          <EvidenceList items={evidence} />
+          {children}
+          <SourceNote sources={sources} />
         </div>
-        <p className="mt-4 text-xl font-semibold leading-snug text-balance sm:text-2xl">
-          {headline}
-        </p>
-        <EvidenceList items={evidence} />
-        {children}
-        <SourceNote sources={sources} />
       </div>
     </section>
   );
