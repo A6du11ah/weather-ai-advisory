@@ -5,6 +5,8 @@ import Link from "next/link";
 import { CROPS } from "@/lib/crops";
 import { PRESETS } from "@/lib/places";
 import { VERDICT } from "@/app/_components/advisory-ui";
+import { MapView } from "@/app/_components/map/map-view";
+import { LocationSearch } from "@/app/_components/map/location-search";
 import type { Verdict } from "@/lib/rules";
 import type { FieldTask } from "@/lib/field-context";
 
@@ -217,12 +219,24 @@ function AddFieldForm({
   onAdded: () => void;
 }) {
   const [name, setName] = useState("");
-  const [lat, setLat] = useState("");
-  const [lon, setLon] = useState("");
+  // Default the map to the first demo location so it never opens on null island.
+  const [lat, setLat] = useState(PRESETS[0].lat);
+  const [lon, setLon] = useState(PRESETS[0].lon);
+  const [placeName, setPlaceName] = useState<string | null>(null);
+  const [picked, setPicked] = useState(false);
+  const [flyTo, setFlyTo] = useState<{ lat: number; lon: number; token: number } | null>(null);
   const [cropId, setCropId] = useState(CROPS[0].id);
   const [plantingDate, setPlantingDate] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function moveTo(nextLat: number, nextLon: number, label: string | null) {
+    setLat(nextLat);
+    setLon(nextLon);
+    setPlaceName(label);
+    setPicked(true);
+    setFlyTo({ lat: nextLat, lon: nextLon, token: Date.now() });
+  }
 
   function useMyLocation() {
     if (!navigator.geolocation) {
@@ -230,11 +244,8 @@ function AddFieldForm({
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setLat(pos.coords.latitude.toFixed(4));
-        setLon(pos.coords.longitude.toFixed(4));
-      },
-      () => setError("Could not get your location — enter it manually."),
+      (pos) => moveTo(pos.coords.latitude, pos.coords.longitude, null),
+      () => setError("Could not get your location — search or drop a pin instead."),
     );
   }
 
@@ -247,8 +258,9 @@ function AddFieldForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
-          lat: Number(lat),
-          lon: Number(lon),
+          lat,
+          lon,
+          placeName,
           cropId,
           plantingDate: plantingDate || null,
         }),
@@ -267,10 +279,10 @@ function AddFieldForm({
   }
 
   const inputCls =
-    "min-h-[44px] w-full rounded-lg border border-border bg-background px-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground";
+    "well min-h-[48px] w-full rounded-xl px-3.5 text-sm text-foreground";
 
   return (
-    <div className="mt-4 rounded-xl border border-border bg-surface p-5">
+    <div className="card mt-4 p-5">
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="block">
           <span className="text-xs font-medium text-muted">Field name</span>
@@ -284,46 +296,60 @@ function AddFieldForm({
             ))}
           </select>
         </label>
-        <label className="block">
-          <span className="text-xs font-medium text-muted">Latitude</span>
-          <input value={lat} onChange={(e) => setLat(e.target.value)} inputMode="decimal" placeholder="-0.7813" className={`mt-1 ${inputCls}`} />
-        </label>
-        <label className="block">
-          <span className="text-xs font-medium text-muted">Longitude</span>
-          <input value={lon} onChange={(e) => setLon(e.target.value)} inputMode="decimal" placeholder="35.3416" className={`mt-1 ${inputCls}`} />
-        </label>
         <label className="block sm:col-span-2">
           <span className="text-xs font-medium text-muted">Planting date (optional — enables stage tracking)</span>
           <input type="date" value={plantingDate} onChange={(e) => setPlantingDate(e.target.value)} className={`mt-1 ${inputCls}`} />
         </label>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <button type="button" onClick={useMyLocation} className="min-h-[44px] cursor-pointer rounded-lg border border-border bg-surface-muted px-3 text-sm hover:bg-border/40">
-          Use my location
-        </button>
-        <span className="text-xs text-muted">or pick a nearby demo point:</span>
-        {PRESETS.map((p) => (
+      {/* Location: search, then fine-tune by dragging the pin. */}
+      <div className="mt-4">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xs font-medium text-muted">Location</span>
           <button
-            key={p.id}
             type="button"
-            onClick={() => { setLat(String(p.lat)); setLon(String(p.lon)); }}
-            className="min-h-[44px] cursor-pointer rounded-full border border-border bg-surface px-3 text-xs hover:bg-surface-muted"
+            onClick={useMyLocation}
+            className="inline-flex min-h-[36px] cursor-pointer items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-xs font-medium hover:bg-surface-muted"
           >
-            {p.name}
+            <span aria-hidden="true">◎</span> Use my location
           </button>
-        ))}
+        </div>
+        <div className="mt-1.5">
+          <LocationSearch onPick={(p) => moveTo(p.lat, p.lon, p.label)} />
+        </div>
+        <div className="mt-2.5">
+          <MapView
+            lat={lat}
+            lon={lon}
+            flyTo={flyTo}
+            onPick={(la, lo) => moveTo(la, lo, null)}
+            height={280}
+          />
+        </div>
+        <p className="mt-2 text-xs text-muted">
+          {picked ? (
+            <>
+              {placeName ? <span className="text-foreground">{placeName} · </span> : null}
+              <span className="font-mono tabular-nums">
+                {lat.toFixed(4)}, {lon.toFixed(4)}
+              </span>{" "}
+              — drag the pin to your exact field.
+            </>
+          ) : (
+            "Search a place or tap the map to set your field, then drag the pin to fine-tune."
+          )}
+        </p>
       </div>
 
-      {error && <p className="mt-2 text-sm text-poor">{error}</p>}
+      {error && <p className="mt-3 text-sm text-poor">{error}</p>}
 
       <button
         type="button"
         onClick={submit}
-        disabled={busy || !lat || !lon}
-        className="mt-4 min-h-[44px] w-full cursor-pointer rounded-lg bg-foreground px-4 text-sm font-medium text-background disabled:opacity-60"
+        disabled={busy || !picked}
+        className="mt-4 min-h-[48px] w-full cursor-pointer rounded-xl bg-brand px-4 text-sm font-semibold text-on-brand transition-opacity hover:opacity-90 disabled:opacity-50"
       >
-        {busy ? "Adding…" : "Add field"}
+        {busy ? "Adding…" : picked ? "Add field" : "Set a location first"}
       </button>
     </div>
   );
