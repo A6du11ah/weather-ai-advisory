@@ -182,7 +182,7 @@ export function ForecastStrip({ days }: { days: DayPoint[] }) {
   return (
     <section className="card p-5 sm:p-6">
       <h2 className="font-display text-lg font-semibold">7-day outlook</h2>
-      <div className="mt-4 -mx-1 overflow-x-auto px-1 pb-1">
+      <div className="scroll-x mt-4 -mx-1 overflow-x-auto px-1 pb-2">
         <ul className="flex min-w-max gap-2">
           {days.map((d) => (
             <li

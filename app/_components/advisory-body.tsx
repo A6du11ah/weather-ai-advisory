@@ -99,7 +99,7 @@ export function AdvisoryBody({
         sources={spray.sources}
       >
         {spray.byDay.length > 1 && (
-          <div className="mt-5 -mx-1 overflow-x-auto px-1 pb-1">
+          <div className="scroll-x mt-5 -mx-1 overflow-x-auto px-1 pb-2">
             <ul className="flex min-w-max gap-2">
               {spray.byDay.map((w) => {
                 const v = VERDICT[w.verdict];

@@ -96,3 +96,51 @@ body {
   border-radius: var(--radius);
   box-shadow: var(--shadow-soft);
 }
+
+/*
+ * Quiet horizontal scroll. The native scrollbar on Windows is a heavy gray bar
+ * with arrow buttons that fights the calm palette. This replaces it with a thin
+ * track that only shows a subtle thumb, and fades the right edge so it stays
+ * clear there is more to scroll without a chunky control announcing it.
+ */
+.scroll-x {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 12px,
+    #000 calc(100% - 20px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 12px,
+    #000 calc(100% - 20px),
+    transparent 100%
+  );
+}
+
+.scroll-x::-webkit-scrollbar {
+  height: 6px;
+}
+
+.scroll-x::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-x::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+}
+
+.scroll-x::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+.scroll-x > * {
+  scroll-snap-align: start;
+}
