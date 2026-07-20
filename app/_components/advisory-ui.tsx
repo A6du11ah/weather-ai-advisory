@@ -178,40 +178,74 @@ export function ChangesBanner({ changes }: { changes: AdvisoryChange[] }) {
 }
 
 export function ForecastStrip({ days }: { days: DayPoint[] }) {
-  const maxRain = Math.max(1, ...days.map((d) => d.precipMm));
+  // Bar length scales to the wettest day, so the rain column reads as a small
+  // chart you can scan straight down to find the dry stretch.
+  const maxRain = Math.max(2, ...days.map((d) => d.precipMm));
+  // A day is "dry enough to dry grain" below ~1mm — mark it, since that is the
+  // whole point of reading a week ahead here.
+  const isDry = (mm: number) => mm <= 1;
+
   return (
     <section className="card p-5 sm:p-6">
       <h2 className="font-display text-lg font-semibold">7-day outlook</h2>
-      <div className="scroll-x mt-4 -mx-1 overflow-x-auto px-1 pb-2">
-        <ul className="flex min-w-max gap-2">
-          {days.map((d) => (
-            <li
-              key={d.date}
-              className="flex w-28 flex-col items-center gap-2 rounded-lg bg-surface-muted p-3"
-            >
-              <span className="text-xs font-medium text-muted">{fmtDate(d.date)}</span>
-              <span className="font-mono text-sm tabular-nums">
-                {d.tempMaxC.toFixed(0)}° / {d.tempMinC.toFixed(0)}°
-              </span>
-              <div className="flex h-14 w-full items-end justify-center">
-                <div
-                  className={`w-4 rounded-t ${d.precipMm > 0 ? "bg-poor" : "bg-good"}`}
-                  style={{
-                    height: `${Math.max(3, (d.precipMm / maxRain) * 100)}%`,
-                    opacity: d.precipMm > 0 ? 0.9 : 0.3,
-                  }}
-                />
+      <ul className="mt-3 divide-y divide-border">
+        {days.map((d, i) => {
+          const dry = isDry(d.precipMm);
+          const day = new Date(`${d.date}T00:00:00`);
+          return (
+            <li key={d.date} className="flex items-center gap-3 py-2.5">
+              {/* Day */}
+              <div className="w-12 shrink-0">
+                <div className="text-sm font-medium">
+                  {i === 0 ? "Today" : day.toLocaleDateString(undefined, { weekday: "short" })}
+                </div>
+                <div className="font-mono text-xs tabular-nums text-muted">
+                  {day.toLocaleDateString(undefined, { day: "numeric", month: "short" })}
+                </div>
               </div>
-              <span className="font-mono text-xs tabular-nums text-muted">
-                {d.precipMm.toFixed(1)} mm
-              </span>
-              <span className="text-center text-[11px] leading-tight text-muted">
-                {describeCode(d.code).label}
-              </span>
+
+              {/* Condition + rain bar */}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={`h-1.5 w-1.5 shrink-0 rounded-full ${dry ? "bg-good" : "bg-rain"}`}
+                    aria-hidden="true"
+                  />
+                  <span className="truncate text-sm text-muted">
+                    {describeCode(d.code).label}
+                  </span>
+                </div>
+                <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-muted">
+                  <div
+                    className="h-full rounded-full bg-rain"
+                    style={{
+                      width: `${Math.round((d.precipMm / maxRain) * 100)}%`,
+                      opacity: d.precipMm > 0 ? 1 : 0,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Rain amount + temp */}
+              <div className="w-24 shrink-0 text-right">
+                <div className="font-mono text-sm tabular-nums">
+                  <span className={dry ? "text-muted" : "text-foreground"}>
+                    {d.precipMm.toFixed(1)}
+                  </span>
+                  <span className="text-muted"> mm</span>
+                </div>
+                <div className="font-mono text-xs tabular-nums text-muted">
+                  {d.tempMaxC.toFixed(0)}° / {d.tempMinC.toFixed(0)}°
+                </div>
+              </div>
             </li>
-          ))}
-        </ul>
-      </div>
+          );
+        })}
+      </ul>
+      <p className="mt-3 flex items-center gap-1.5 text-xs text-muted">
+        <span className="h-1.5 w-1.5 rounded-full bg-good" aria-hidden="true" />
+        rain-free enough to dry
+      </p>
     </section>
   );
 }

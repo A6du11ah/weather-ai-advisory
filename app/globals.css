@@ -26,6 +26,8 @@
   --poor: #a13c29;
   --poor-bg: #f5e4dd;
 
+  --rain: #5f7f9e;
+
   --shadow-soft: 0 1px 2px rgba(35, 32, 26, 0.04), 0 4px 16px rgba(35, 32, 26, 0.05);
   --radius: 1rem;
 }
@@ -51,6 +53,8 @@
     --poor: #e59079;
     --poor-bg: #331a12;
 
+    --rain: #89a6c2;
+
     --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 20px rgba(0, 0, 0, 0.35);
   }
 }
@@ -74,6 +78,7 @@
   --color-marginal-bg: var(--marginal-bg);
   --color-poor: var(--poor);
   --color-poor-bg: var(--poor-bg);
+  --color-rain: var(--rain);
 
   --font-display: var(--font-lora), Georgia, serif;
   --font-sans: var(--font-inter), system-ui, sans-serif;
