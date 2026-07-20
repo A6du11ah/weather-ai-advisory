@@ -9,6 +9,7 @@
  */
 
 import type { CurrentPoint, DayPoint, Forecast, HourPoint, Usage } from "./types";
+import { validateForecastPayload } from "./validate";
 
 const BASE_URL =
   process.env.WEATHERAI_BASE_URL?.replace(/\/$/, "") ?? "https://api.weather-ai.co";
@@ -154,11 +155,18 @@ export async function fetchForecast(opts: {
   });
   if (opts.withAi) params.set("ai", "true");
 
-  const raw = await call<RawForecast>(`/v1/weather?${params}`, opts.signal);
+  const json = await call<unknown>(`/v1/weather?${params}`, opts.signal);
 
-  if (!Array.isArray(raw.daily) || raw.daily.length === 0) {
+  // Validate before normalising. A null or missing numeric field would
+  // otherwise pass the cast, become NaN in the scoring maths, and surface as a
+  // confident "poor" verdict with no error anywhere. The gate turns that
+  // silent corruption into a diagnosable failure naming the offending field.
+  let raw: RawForecast;
+  try {
+    raw = validateForecastPayload(json) as unknown as RawForecast;
+  } catch (err) {
     throw new WeatherAIError(
-      "WeatherAI returned no daily forecast data.",
+      err instanceof Error ? err.message : "Invalid WeatherAI payload.",
       502,
       false,
     );
@@ -168,7 +176,7 @@ export async function fetchForecast(opts: {
     place: { lat: raw.lat, lon: raw.lon },
     current: normalizeCurrent(raw.current),
     days: raw.daily.map(normalizeDay),
-    hours: Array.isArray(raw.hourly) ? raw.hourly.map(normalizeHour) : [],
+    hours: raw.hourly.map(normalizeHour),
     aiSummary: raw.ai_summary?.trim() || null,
     fetchedAt: new Date().toISOString(),
   };

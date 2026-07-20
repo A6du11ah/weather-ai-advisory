@@ -24,9 +24,10 @@
  *     daily totals.
  */
 
-import type { DayPoint, HourPoint } from "./types";
+import type { DayPoint, HourPoint, Place } from "./types";
 import { describeCode } from "./weathercode";
 import { DEFAULT_CROP, type CropProfile } from "./crops";
+import { isSprayableHour } from "./solar";
 
 export const SOURCES = {
   aflatoxin: {
@@ -329,6 +330,7 @@ export function findSprayWindows(
   days: DayPoint[],
   now: Date = new Date(),
   crop: CropProfile = DEFAULT_CROP,
+  place?: Place,
 ): SprayWindow[] {
   const t = THRESHOLDS.spray;
   const timeline = buildPrecipTimeline(hours, days);
@@ -345,6 +347,17 @@ export function findSprayWindows(
     const at = new Date(h.time);
     if (at <= now) continue;
     if (h.precipMm > 0.2 || describeCode(h.code).wet) continue;
+
+    // Daylight gate. Without a location we cannot compute it, so the check is
+    // skipped; with one, drop hours outside the sprayable part of the day so
+    // the scorer can never recommend a rainfast but pitch-dark 03:00 slot. The
+    // hour is read lexically from the offset-less local timestamp rather than
+    // via Date, whose parse would apply the server's timezone.
+    if (place) {
+      const localHour = Number(h.time.slice(11, 13)) + Number(h.time.slice(14, 16)) / 60;
+      const dayDate = new Date(`${h.time.slice(0, 10)}T00:00`);
+      if (!isSprayableHour(place.lat, place.lon, localHour, dayDate)) continue;
+    }
 
     const windowEnd = new Date(at.getTime() + t.rainfastHours * 3_600_000);
     if (!timelineEnd || timelineEnd < windowEnd) continue;
@@ -405,10 +418,11 @@ export function bestSprayWindowPerDay(
   days: DayPoint[],
   now?: Date,
   crop: CropProfile = DEFAULT_CROP,
+  place?: Place,
 ): SprayWindow[] {
   const byDay = new Map<string, SprayWindow>();
 
-  for (const w of findSprayWindows(hours, days, now, crop)) {
+  for (const w of findSprayWindows(hours, days, now, crop, place)) {
     const day = w.time.slice(0, 10);
     const existing = byDay.get(day);
     if (!existing || w.score > existing.score) byDay.set(day, w);

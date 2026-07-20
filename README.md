@@ -105,28 +105,36 @@ dry day actually dries. Runs must reach 3 consecutive days; shorter runs are
 still reported as near-misses, because "the longest dry spell is two days and
 you need three" is actionable where an empty result looks like a bug.
 
-**Spraying.** Candidate hours are dry hours from now onward. The dominant term
-is rain *after* application, since a perfect temperature reading is worthless
-if the product washes off.
+Because the payload carries no humidity, the tool cannot honestly promise the
+crop *reaches* a target moisture — only that a run of days is **rain-free**, and
+how warm and clear they are. The copy says exactly that.
 
-Crucially, washoff is **time-weighted**. The cited guidance says *when* rain
-falls matters more than how much — a deposit is most vulnerable immediately
-after application and becomes progressively rainfast as it dries. An earlier
-version summed rainfall flat across the window, which scored 20mm one hour
-after application about the same as 20mm at hour 23, contradicting the source
-displayed directly beneath the verdict. `weightedWashoff()` now decays
-vulnerability from 1.0 at application to 0 at 24 hours. Both the raw total and
-the weighted figure are shown, so the adjustment is visible rather than hidden.
+**Spraying.** Candidate hours are dry, **daylit** hours from now onward. The
+daylight gate (`lib/solar.ts`) computes sunrise and sunset from NOAA solar
+geometry and drops hours before dew has burned off (2h after sunrise) or near
+the evening inversion (1h before sunset). Without it the scorer would happily
+recommend a rainfast but pitch-dark 03:00 slot — which it did before this pass.
+
+The dominant scoring term is rain *after* application. Washoff is
+**time-weighted**: the cited guidance says *when* rain falls matters more than
+how much — a deposit is most vulnerable immediately after application and
+becomes progressively rainfast as it dries. An earlier version summed rainfall
+flat, scoring 20mm one hour after application like 20mm at hour 23, contradicting
+the source shown beneath the verdict. `weightedWashoff()` decays vulnerability
+from 1.0 at application to 0 at 24 hours. Both figures are shown.
 
 An hour is only scored if its **entire** rainfast window is covered by
-available data. Otherwise unobserved hours count as zero rain, which silently
-converts "we don't know" into a confident recommendation — a bug caught by
-`lib/rules.test.ts` rather than by inspection.
+available data — otherwise unobserved hours count as zero rain, converting "we
+don't know" into a confident recommendation.
 
-**Crop selection** re-scores the same cached forecast against different
-thresholds (`lib/crops.ts`) — wheat clears a 2-day window that maize fails and
-coffee needs five. It costs **zero** additional API requests, which is what
-makes it affordable personalisation on the free tier.
+**Crop selection** re-scores the same forecast against different thresholds
+(`lib/crops.ts`) — wheat clears a 2-day window that maize fails and coffee needs
+five — at **zero** additional API cost.
+
+**Payload validation** (`lib/validate.ts`, zod). The client used to cast the
+JSON response straight to a type, so a null `temp_max` became `NaN` and
+surfaced as a confident "poor" on every card with no error. Validation now
+turns that into a loud failure naming the offending field.
 
 ---
 
@@ -134,20 +142,62 @@ makes it affordable personalisation on the free tier.
 
 ```
 app/
-  page.tsx              server shell
-  advisory-view.tsx     client UI
-  api/advisory/route.ts server proxy — key never reaches the browser
+  page.tsx                     home (client, interactive)
+  s/[station]/                 server-rendered, shareable per-location pages + OG image
+  api/advisory/route.ts        first-party endpoint (DB-backed when configured)
+  api/v1/advisory/[station]/   versioned public contract (CORS, stable shape)
+  api/v1/openapi.json/         OpenAPI 3 description of that contract
+  api/cron/refresh/            scheduled writer — the only path that spends quota
+  _components/                 shared advisory UI (home and station pages agree)
 lib/
-  weatherai.ts          API client; the only file that knows the upstream shape
-  types.ts              normalized model everything else depends on
-  rules.ts              advisory engine (sourced thresholds)
-  weathercode.ts        WMO code → drying effectiveness
-  cache.ts              TTL cache with stale fallback
-  places.ts             demo locations
+  weatherai.ts    API client; the only file that knows the upstream shape
+  validate.ts     zod validation of the upstream payload
+  types.ts        normalized model everything else depends on
+  advisory.ts     Forecast → advisory payload (one source for every surface)
+  rules.ts        drying + spray engine (sourced thresholds)
+  solar.ts        NOAA sunrise/sunset; daylight gate for spray hours
+  diff.ts         day-over-day change detection
+  crops.ts        per-crop thresholds
+  weathercode.ts  WMO code → drying effectiveness
+  cache.ts        in-memory TTL cache with bounded stale fallback
+  places.ts       stations
+  forecast-source.ts  resolves snapshot → cache → live → stale
+  db/             Drizzle schema, Neon client, snapshot + quota-ledger queries
 ```
 
+### The fetch inversion (persistence)
+
+Set `DATABASE_URL` (a free [Neon](https://neon.tech) Postgres works) and the
+architecture flips. A GitHub Actions cron hits `/api/cron/refresh` a few times
+a day; that job is the **only** code path that calls the upstream API. Every
+page load and every `/api/v1` call then reads a stored snapshot — so public
+traffic costs **zero** quota, and the site cannot be taken down by going viral.
+
+It is a fail-open migration: with no `DATABASE_URL` the app runs exactly as
+before on the in-memory cache. `lib/forecast-source.ts` resolves in priority
+order — stored snapshot, cache, live fetch, bounded-stale copy — so `main`
+stays deployable whether or not a database is attached.
+
+The unique `(station, local_date)` constraint keeps one snapshot per station
+per day. Comparing today's row against yesterday's is what powers the
+**day-over-day diff** (`lib/diff.ts`): *"the Thursday drying window is gone —
+rain now forecast."* A retraction of a still-future window is surfaced; a
+window that merely elapsed is not. This is the one thing the product does that
+a stateless weather app structurally cannot.
+
+### Public API
+
+`GET /api/v1/advisory/{station}?crop={crop}` returns a flat, versioned,
+CORS-enabled advisory; `GET /api/v1/openapi.json` describes it. This is the
+B2B-customer-facing surface the market note argues is the real product shape —
+now callable, not just asserted.
+
 **Quota protection.** The free plan allows 1,000 requests/month — about 33 per
-day for everything combined. Three things keep the deployment inside it:
+day for everything combined. Four things keep the deployment inside it:
+
+0. **The cron writer is the only spender** when a database is configured
+   (see above), and it reserves the whole batch against a monthly ledger,
+   refusing above a 900 ceiling before spending a single call.
 
 1. **Only allowlisted locations are fetchable** (`matchPreset`). Coordinate
    rounding alone does not bound quota: a caller sweeping latitudes mints a
@@ -173,10 +223,34 @@ shared one. Acceptable at this scale; production would use Redis or Vercel KV.
 npm test
 ```
 
-17 tests over the rules engine (`lib/rules.test.ts`), covering the regressions
-that motivated them: trace rain miscoded as drizzle splitting a valid drying
-run, time-weighted versus flat washoff, near-miss reporting, past-hour
-exclusion, incomplete-lookahead refusal, and quota allowlisting.
+79 tests across the pure logic: the rules engine (`lib/rules.test.ts`), solar
+geometry including polar day/night (`lib/solar.test.ts`), payload validation
+(`lib/validate.test.ts`), and day-over-day diffing including the
+elapsed-versus-retracted distinction (`lib/diff.test.ts`). Several encode
+regressions found during development — trace rain miscoded as drizzle splitting
+a valid run, flat versus time-weighted washoff, an hour scored on an
+incomplete rainfast window.
+
+## Optional: enabling persistence
+
+The app runs with no database. To turn on snapshots, the zero-quota read path,
+and the day-over-day diff:
+
+```bash
+# 1. Create a free Postgres (e.g. Neon) and set its URL
+echo 'DATABASE_URL=postgresql://…' >> .env.local
+echo 'CRON_SECRET=some-long-random-string' >> .env.local
+
+# 2. Create the tables
+npm run db:push
+
+# 3. Warm the store once (or wait for the scheduled job)
+curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/refresh
+```
+
+On Vercel, set `DATABASE_URL` and `CRON_SECRET` in project settings, and add
+`DEPLOYMENT_URL` + `CRON_SECRET` as GitHub Actions repository secrets so
+`.github/workflows/refresh.yml` can trigger refreshes on schedule.
 
 ---
 

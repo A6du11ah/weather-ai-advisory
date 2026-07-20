@@ -1,0 +1,31 @@
+name: Refresh forecasts
+
+# Populates the snapshot store so the site reads from Postgres instead of
+# spending API quota on every page load. GitHub Actions is used rather than
+# Vercel Cron because the Hobby plan caps cron at one run per day.
+#
+# Requires two repository secrets:
+#   DEPLOYMENT_URL  e.g. https://weather-ai-advisory.vercel.app
+#   CRON_SECRET     the same value set on the Vercel deployment
+
+on:
+  schedule:
+    # 05:00 and 15:00 UTC. Two refreshes span the time zones the stations sit
+    # in without approaching the monthly quota ceiling.
+    - cron: "0 5,15 * * *"
+  workflow_dispatch: {} # allow a manual run from the Actions tab
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger refresh
+        run: |
+          code=$(curl -sS -o /tmp/body -w "%{http_code}" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.DEPLOYMENT_URL }}/api/cron/refresh")
+          echo "HTTP $code"
+          cat /tmp/body
+          # Fail the job on a non-2xx so a broken schedule is visible in the
+          # Actions tab rather than silently doing nothing.
+          test "$code" -ge 200 -a "$code" -lt 300

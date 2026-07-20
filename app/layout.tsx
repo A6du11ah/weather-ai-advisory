@@ -13,6 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.SITE_URL ?? "https://weather-ai-advisory.vercel.app",
+  ),
   title: "Field Window — grain drying & spray advisories",
   description:
     "Turns a 7-day forecast into two farm decisions: when to dry grain safely, and when to spray without losing the application to rain. Built on the WeatherAI API.",

@@ -1,25 +1,25 @@
 /**
  * Advisory endpoint.
  *
- * Proxies WeatherAI so the API key stays server-side, caches responses to
- * protect a 1,000-request monthly quota, runs the rules engine, and returns
- * advisories together with the evidence behind them.
+ * Resolves a forecast (from the snapshot store when available, otherwise live),
+ * assembles the advisory via the shared builder, and — when a prior day's
+ * snapshot exists — reports what changed since yesterday. The API key never
+ * leaves the server.
  */
 
 import type { NextRequest } from "next/server";
-import { fetchForecast, fetchUsage, WeatherAIError } from "@/lib/weatherai";
-import {
-  bestSprayWindowPerDay,
-  currentWindCheck,
-  findDryingWindows,
-  SOURCES,
-  THRESHOLDS,
-  todayHeadline,
-} from "@/lib/rules";
+import { fetchUsage } from "@/lib/weatherai";
 import * as cache from "@/lib/cache";
 import { matchPreset, PRESETS } from "@/lib/places";
-import { findCrop } from "@/lib/crops";
-import type { Forecast, Usage } from "@/lib/types";
+import { buildAdvisory, toSnapshotLite } from "@/lib/advisory";
+import {
+  resolveForecast,
+  resolvePreviousForecast,
+} from "@/lib/forecast-source";
+import { diffAdvisories } from "@/lib/diff";
+import { getMonthlyUsage } from "@/lib/db/snapshots";
+import type { Usage } from "@/lib/types";
+import type { WeatherAIError } from "@/lib/weatherai";
 
 export async function GET(request: NextRequest) {
   const sp = request.nextUrl.searchParams;
@@ -33,9 +33,6 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Only allowlisted locations are fetchable. Coordinate rounding alone does
-  // not bound quota — a caller sweeping latitudes mints a new cache key every
-  // 0.1°, turning a public URL into a way to drain the monthly allowance.
   const place = matchPreset(lat, lon);
   if (!place) {
     return Response.json(
@@ -54,123 +51,92 @@ export async function GET(request: NextRequest) {
   }
 
   const withAi = process.env.ENABLE_AI_SUMMARY !== "false";
-  const key = cache.cacheKey(["forecast", place.id]);
+  const cropId = sp.get("crop");
 
-  const cached = cache.getFresh<Forecast>(key);
-  let forecast: Forecast;
-  let staleAgeSeconds: number | null = null;
-
-  if (cached) {
-    forecast = cached;
-  } else {
-    try {
-      forecast = await fetchForecast({
-        lat: place.lat,
-        lon: place.lon,
-        days: 7,
-        withAi,
-      });
-      cache.set(key, forecast, cache.TTL.forecast);
-    } catch (err) {
-      // Quota exhaustion and upstream outages are expected on a free plan.
-      // Serving slightly-old data beats showing a reviewer an error page —
-      // but only while it is still recent enough to be about the future.
-      const stale = cache.getStale<Forecast>(key);
-      if (stale) {
-        forecast = stale.value;
-        staleAgeSeconds = stale.ageSeconds;
-      } else {
-        const e = err as WeatherAIError;
-        return Response.json(
-          {
-            error: e.message ?? "Unexpected error",
-            retryable: e.retryable ?? false,
-          },
-          { status: e.status ?? 500 },
-        );
-      }
-    }
+  let resolved;
+  try {
+    resolved = await resolveForecast(place, { withAi });
+  } catch (err) {
+    const e = err as WeatherAIError;
+    return Response.json(
+      { error: e.message ?? "Unexpected error", retryable: e.retryable ?? false },
+      { status: e.status ?? 500 },
+    );
   }
 
-  // Usage is a separate, cheap call and must never break the page.
-  let usage: Usage | null = cache.getFresh<Usage>("usage");
-  if (!usage) {
-    try {
-      usage = await fetchUsage();
-      cache.set("usage", usage, cache.TTL.usage);
-    } catch {
-      usage = cache.getStale<Usage>("usage")?.value ?? null;
-    }
-  }
+  const payload = buildAdvisory({
+    forecast: resolved.forecast,
+    stationId: place.id,
+    placeName: place.name,
+    cropId,
+  });
 
-  // Crop only re-scores the same payload — it never triggers another fetch,
-  // which is what makes it affordable personalisation on the free tier.
-  const crop = findCrop(sp.get("crop"));
-
-  const dryingRuns = findDryingWindows(forecast.days, crop);
-  const bestDrying = dryingRuns.find((w) => w.sufficient) ?? null;
-  const spray = bestSprayWindowPerDay(
-    forecast.hours,
-    forecast.days,
-    undefined,
-    crop,
+  // Day-over-day change, when a prior snapshot exists. Same crop on both sides
+  // so a change reflects the weather moving, not the user switching crops.
+  const previousForecast = await resolvePreviousForecast(
+    place.id,
+    resolved.localDate,
   );
-  const bestSpray = spray.find((w) => w.verdict === "good") ?? spray[0] ?? null;
+  const changes = previousForecast
+    ? diffAdvisories(
+        toSnapshotLite(
+          buildAdvisory({
+            forecast: previousForecast,
+            stationId: place.id,
+            placeName: place.name,
+            cropId,
+          }),
+        ),
+        toSnapshotLite(payload),
+        resolved.localDate,
+      )
+    : [];
 
-  // "Today" per the forecast's own first day, not the server clock — the
-  // server runs in UTC and the locations span five time zones.
-  const today = forecast.days[0]?.date ?? "";
+  const usage = await resolveUsage();
 
   return Response.json(
     {
-      place: forecast.place,
-      placeName: place.name,
-      crop: {
-        id: crop.id,
-        name: crop.name,
-        note: crop.note,
-        minRunDays: crop.minRunDays,
-        storageMoisturePct: crop.storageMoisturePct,
-      },
-      headline: todayHeadline(bestDrying, bestSpray, today),
-      current: forecast.current,
-      days: forecast.days,
-      aiSummary: forecast.aiSummary,
-      advisories: {
-        drying: {
-          best: bestDrying,
-          /** Longest dry spell found when none is long enough to be usable. */
-          closest: bestDrying ? null : (dryingRuns[0] ?? null),
-          alternatives: dryingRuns
-            .filter((w) => w.sufficient && w !== bestDrying)
-            .slice(0, 2),
-          minRunDays: crop.minRunDays,
-          source: SOURCES.aflatoxin,
-        },
-        spray: {
-          best: bestSpray,
-          byDay: spray,
-          windCheck: currentWindCheck(forecast.current.windKph),
-          sources: [SOURCES.rainfast, SOURCES.sprayDrift],
-        },
-      },
+      ...payload,
+      changes,
       meta: {
-        fetchedAt: forecast.fetchedAt,
-        stale: staleAgeSeconds !== null,
-        staleHours:
-          staleAgeSeconds === null
-            ? null
-            : Math.round((staleAgeSeconds / 3600) * 10) / 10,
-        cached: Boolean(cached),
+        fetchedAt: resolved.forecast.fetchedAt,
+        origin: resolved.origin,
+        stale: resolved.origin === "stale",
+        ageHours: resolved.ageHours,
         usage,
       },
     },
     {
       headers: {
-        // Longer than before, and matched to the 6h upstream TTL so the edge
-        // does not force origin work the origin would only serve from cache.
         "Cache-Control": "public, s-maxage=1800, stale-while-revalidate=21600",
       },
     },
   );
+}
+
+/**
+ * Usage for the footer. Prefers the local ledger (free) over an upstream call,
+ * and must never break the page.
+ */
+async function resolveUsage(): Promise<Usage | null> {
+  const ledgerUsed = await getMonthlyUsage();
+  if (ledgerUsed !== null) {
+    return {
+      plan: "free",
+      used: ledgerUsed,
+      limit: 1000,
+      remaining: Math.max(0, 1000 - ledgerUsed),
+      unlimited: false,
+    };
+  }
+
+  const cachedUsage = cache.getFresh<Usage>("usage");
+  if (cachedUsage) return cachedUsage;
+  try {
+    const usage = await fetchUsage();
+    cache.set("usage", usage, cache.TTL.usage);
+    return usage;
+  } catch {
+    return cache.getStale<Usage>("usage")?.value ?? null;
+  }
 }
