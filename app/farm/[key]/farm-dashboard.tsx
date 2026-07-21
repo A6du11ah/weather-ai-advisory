@@ -45,6 +45,9 @@ export default function FarmDashboard({ farmKey }: { farmKey: string }) {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const [savingName, setSavingName] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -64,6 +67,39 @@ export default function FarmDashboard({ farmKey }: { farmKey: string }) {
     void load();
   }, [load]);
 
+  // Keep the browser tab in sync with the farm's name (the static route
+  // metadata can only say "My farm"; the real name is only known client-side).
+  useEffect(() => {
+    if (data?.farm.name) document.title = `${data.farm.name} — Seasonwise`;
+  }, [data?.farm.name]);
+
+  async function saveName() {
+    const next = nameDraft.trim();
+    if (!next || !data) {
+      setEditingName(false);
+      return;
+    }
+    if (next === data.farm.name) {
+      setEditingName(false);
+      return;
+    }
+    setSavingName(true);
+    try {
+      const res = await fetch(`/api/farm/${farmKey}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: next }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setData((d) => (d ? { ...d, farm: { ...d.farm, name: json.farm.name } } : d));
+        setEditingName(false);
+      }
+    } finally {
+      setSavingName(false);
+    }
+  }
+
   if (notFound) {
     return (
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-12">
@@ -77,13 +113,72 @@ export default function FarmDashboard({ farmKey }: { farmKey: string }) {
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:py-12">
       <header className="flex items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <Link href="/" className="text-sm text-muted underline-offset-2 hover:underline">
             ← {t("a.home")}
           </Link>
-          <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
-            {data?.farm.name ?? "My farm"}
-          </h1>
+          {editingName ? (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <input
+                autoFocus
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void saveName();
+                  if (e.key === "Escape") setEditingName(false);
+                }}
+                aria-label={t("farm.rename")}
+                className="min-h-[44px] w-full max-w-xs rounded-lg border border-border bg-background px-3 font-display text-2xl font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:text-3xl"
+              />
+              <button
+                type="button"
+                onClick={() => void saveName()}
+                disabled={savingName}
+                className="min-h-[44px] cursor-pointer rounded-xl bg-brand px-4 text-sm font-semibold text-on-brand transition-opacity hover:opacity-90 disabled:opacity-60"
+              >
+                {savingName ? "…" : t("farm.save")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditingName(false)}
+                className="min-h-[44px] cursor-pointer rounded-xl border border-border bg-surface px-4 text-sm font-medium hover:bg-surface-muted"
+              >
+                {t("farm.cancel")}
+              </button>
+            </div>
+          ) : (
+            <div className="mt-2 flex items-center gap-1.5">
+              <h1 className="truncate font-display text-3xl font-semibold tracking-tight sm:text-4xl">
+                {data?.farm.name ?? "My farm"}
+              </h1>
+              {data && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNameDraft(data.farm.name);
+                    setEditingName(true);
+                  }}
+                  aria-label={t("farm.rename")}
+                  title={t("farm.rename")}
+                  className="grid size-11 shrink-0 cursor-pointer place-items-center rounded-lg text-muted hover:bg-surface-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="size-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </header>
 

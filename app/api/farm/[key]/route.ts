@@ -6,7 +6,7 @@
  */
 
 import type { NextRequest } from "next/server";
-import { getFarmByKey, listActivities, listFields } from "@/lib/db/farms";
+import { getFarmByKey, listActivities, listFields, renameFarm } from "@/lib/db/farms";
 import { composeField } from "@/lib/farm-view";
 import type { FieldTask } from "@/lib/field-context";
 
@@ -74,4 +74,29 @@ export async function GET(
     fields: views,
     tasks,
   });
+}
+
+/** Rename a farm. The key in the path is the credential, as with GET. */
+export async function PATCH(
+  request: NextRequest,
+  ctx: { params: Promise<{ key: string }> },
+) {
+  const { key } = await ctx.params;
+
+  let name = "";
+  try {
+    const body = await request.json();
+    if (typeof body?.name === "string") name = body.name;
+  } catch {
+    // No body — falls through to the empty-name guard below.
+  }
+  if (!name.trim()) {
+    return Response.json({ error: "A name is required." }, { status: 400 });
+  }
+
+  const farm = await renameFarm(key, name);
+  if (!farm) {
+    return Response.json({ error: "Farm not found." }, { status: 404 });
+  }
+  return Response.json({ farm: { name: farm.name, key: farm.key } });
 }

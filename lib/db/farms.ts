@@ -40,6 +40,17 @@ export async function createFarm(name: string): Promise<FarmRow | null> {
   return rows[0] ?? null;
 }
 
+export async function renameFarm(key: string, name: string): Promise<FarmRow | null> {
+  const db = getDb();
+  if (!db) return null;
+  const rows = await db
+    .update(farms)
+    .set({ name: name.trim() || "My farm" })
+    .where(eq(farms.key, key))
+    .returning();
+  return rows[0] ?? null;
+}
+
 export async function getFarmByKey(key: string): Promise<FarmRow | null> {
   const db = getDb();
   if (!db) return null;

@@ -97,18 +97,29 @@ export default function Developers() {
         <section className="mt-8">
           <h2 className="font-display text-xl font-semibold text-foreground">Machine-readable spec</h2>
           <p className="mt-2 text-ink-body">
-            This page is the human reference. For code generation and tooling,
-            the same contract is served as raw OpenAPI 3 JSON (opens in a new
-            tab):
+            This page is the quick reference. For a full, browsable reference —
+            every schema, field, and example, rendered from the live OpenAPI 3
+            contract — open the interactive API reference. The raw JSON is there
+            too, for code generation and tooling.
           </p>
-          <a
-            href="/api/v1/openapi.json"
-            target="_blank"
-            rel="noreferrer"
-            className="mt-3 inline-flex min-h-[44px] items-center rounded-xl border border-border bg-surface px-4 text-sm font-semibold text-foreground hover:bg-surface-muted"
-          >
-            openapi.json (raw) ↗
-          </a>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <a
+              href="/developers/reference"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-[44px] items-center rounded-xl bg-brand px-4 text-sm font-semibold text-on-brand hover:opacity-90"
+            >
+              Interactive API reference ↗
+            </a>
+            <a
+              href="/api/v1/openapi.json"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex min-h-[44px] items-center rounded-xl border border-border bg-surface px-4 text-sm font-medium text-muted hover:bg-surface-muted"
+            >
+              Download openapi.json
+            </a>
+          </div>
         </section>
 
         <p className="mt-10 text-sm text-muted">
