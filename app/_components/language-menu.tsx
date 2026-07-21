@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { LOCALES, getLocale, setLocale, useT } from "@/lib/i18n";
+import { LOCALES, setLocale, useLocale } from "@/lib/i18n";
 
 /**
  * Language switcher for the site chrome and landing. A compact dropdown of the
@@ -10,12 +10,11 @@ import { LOCALES, getLocale, setLocale, useT } from "@/lib/i18n";
  */
 export function LanguageMenu() {
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState("en");
+  // Read the active locale from the shared store so every menu instance stays
+  // in sync when one of them changes the language.
+  const active = useLocale();
   const ref = useRef<HTMLDivElement>(null);
-  // Subscribe so the trigger label follows changes made elsewhere.
-  useT();
 
-  useEffect(() => setActive(getLocale()), []);
   useEffect(() => {
     function onDoc(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -46,7 +45,6 @@ export function LanguageMenu() {
                 type="button"
                 onClick={() => {
                   setLocale(l.code);
-                  setActive(l.code);
                   setOpen(false);
                 }}
                 className={`flex min-h-[40px] w-full items-center justify-between px-3 text-left text-sm hover:bg-surface-muted ${

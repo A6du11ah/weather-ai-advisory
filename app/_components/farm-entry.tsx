@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "@/lib/i18n";
 
 const STORAGE_KEY = "fieldwindow.farmKey";
 
@@ -14,6 +15,7 @@ const STORAGE_KEY = "fieldwindow.farmKey";
  */
 export default function FarmEntry() {
   const router = useRouter();
+  const t = useT();
   const [savedKey, setSavedKey] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
@@ -56,18 +58,15 @@ export default function FarmEntry() {
 
   return (
     <section className="card p-5 sm:p-6">
-      <h2 className="font-display text-xl font-semibold">Start your farm</h2>
-      <p className="mt-1 text-sm text-muted">
-        Add your fields and crops, log what you do, and get advisories tuned to
-        each field&rsquo;s stage — not just the weather.
-      </p>
+      <h2 className="font-display text-xl font-semibold">{t("nav.start")}</h2>
+      <p className="mt-1 text-sm text-muted">{t("farm.desc")}</p>
 
       {savedKey && (
         <a
           href={`/farm/${savedKey}`}
           className="mt-4 flex min-h-[48px] items-center justify-center rounded-xl bg-brand px-4 text-sm font-semibold text-on-brand transition-opacity hover:opacity-90"
         >
-          Open my farm →
+          {t("farm.open")}
         </a>
       )}
 
@@ -75,7 +74,7 @@ export default function FarmEntry() {
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Farm name (optional)"
+          placeholder={t("farm.ph")}
           className="min-h-[44px] flex-1 rounded-lg border border-border bg-background px-3 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
         />
         <button
@@ -88,15 +87,12 @@ export default function FarmEntry() {
               : "bg-brand text-on-brand hover:opacity-90"
           }`}
         >
-          {busy ? "Creating…" : savedKey ? "Create another" : "Create a farm"}
+          {busy ? "…" : savedKey ? t("farm.another") : t("farm.create")}
         </button>
       </div>
 
       {error && <p className="mt-2 text-sm text-poor">{error}</p>}
-      <p className="mt-2 text-xs text-muted">
-        No sign-up. Your farm lives at a private link kept on this device — save
-        it to return from another phone.
-      </p>
+      <p className="mt-2 text-xs text-muted">{t("farm.note")}</p>
     </section>
   );
 }

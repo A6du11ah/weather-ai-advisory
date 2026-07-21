@@ -1,11 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import { LogoMark } from "./logo";
+import { useT } from "@/lib/i18n";
 
 /**
  * Marketing footer — a filled deep-green band that closes the page, with
  * navigation, provenance, and data attributions (required for OSM/CARTO).
  */
 export function SiteFooter() {
+  const t = useT();
   return (
     <footer className="mt-20 bg-brand-deep text-on-brand">
       <div className="mx-auto w-full max-w-5xl px-4 py-12">
@@ -17,26 +21,23 @@ export function SiteFooter() {
               </span>
               <span className="font-display text-lg font-semibold">Seasonwise</span>
             </div>
-            <p className="mt-3 max-w-xs text-sm text-on-brand/75">
-              Your season, one field at a time. Weather-driven decisions from
-              planting to storage.
-            </p>
+            <p className="mt-3 max-w-xs text-sm text-on-brand/75">{t("foot.tagline")}</p>
           </div>
 
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wide text-on-brand/60">
-              Product
+              {t("foot.product")}
             </h3>
             <ul className="mt-3 space-y-2 text-sm">
-              <li><Link href="/how-it-works" className="text-on-brand/85 hover:text-on-brand">How it works</Link></li>
-              <li><Link href="/demo" className="text-on-brand/85 hover:text-on-brand">Live demo</Link></li>
-              <li><Link href="/#start" className="text-on-brand/85 hover:text-on-brand">Start a farm</Link></li>
+              <li><Link href="/how-it-works" className="text-on-brand/85 hover:text-on-brand">{t("nav.how")}</Link></li>
+              <li><Link href="/demo" className="text-on-brand/85 hover:text-on-brand">{t("nav.demo")}</Link></li>
+              <li><Link href="/#start" className="text-on-brand/85 hover:text-on-brand">{t("nav.start")}</Link></li>
             </ul>
           </div>
 
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wide text-on-brand/60">
-              Developers
+              {t("nav.developers")}
             </h3>
             <ul className="mt-3 space-y-2 text-sm">
               <li><Link href="/developers" className="text-on-brand/85 hover:text-on-brand">API reference</Link></li>
@@ -59,10 +60,7 @@ export function SiteFooter() {
             Weather by WeatherAI · Maps © OpenStreetMap contributors © CARTO ·
             Geocoding by Open-Meteo &amp; Nominatim
           </p>
-          <p className="mt-1">
-            Advisory only. Thresholds are general extension guidance; local
-            practice and product labels take precedence.
-          </p>
+          <p className="mt-1">{t("foot.advisory")}</p>
         </div>
       </div>
     </footer>
