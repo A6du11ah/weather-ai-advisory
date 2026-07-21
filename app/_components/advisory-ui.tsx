@@ -163,17 +163,17 @@ export function ConditionsPanel({
         <div className="mt-4 grid grid-cols-2 gap-3">
           {work && (
             <StatTile
-              label="Next dry spell"
+              label={t("st.dry")}
               value={`${work.days}`}
-              unit={work.days === 1 ? "day" : "days"}
+              unit={work.days === 1 ? t("st.day") : t("st.days")}
               accent="brand"
             />
           )}
           {gdd && (
             <StatTile
-              label="Growing-degree-days"
+              label={t("st.gdd")}
               value={gdd.gdd.toLocaleString()}
-              unit="since planting"
+              unit={t("st.since")}
               accent="amber"
             />
           )}

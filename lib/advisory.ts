@@ -51,6 +51,9 @@ export interface AdvisoryPayload {
     storageMoisturePct: number;
   };
   headline: string;
+  /** Translation key + params for the headline; the client localizes from these. */
+  headlineKey: string;
+  headlineParams: Record<string, string>;
   current: CurrentPoint;
   days: DayPoint[];
   aiSummary: string | null;
@@ -107,6 +110,7 @@ export function buildAdvisory(opts: {
   // "Today" is the forecast's own first day, not the server date — the server
   // runs in UTC and the stations span five time zones.
   const today = forecast.days[0]?.date ?? "";
+  const headline = todayHeadline(bestDrying, bestSpray, today);
 
   return {
     place: forecast.place,
@@ -119,7 +123,9 @@ export function buildAdvisory(opts: {
       minRunDays: crop.minRunDays,
       storageMoisturePct: crop.storageMoisturePct,
     },
-    headline: todayHeadline(bestDrying, bestSpray, today),
+    headline: headline.text,
+    headlineKey: headline.key,
+    headlineParams: headline.params,
     current: forecast.current,
     days: forecast.days,
     aiSummary: forecast.aiSummary,

@@ -47,7 +47,9 @@ export function AdvisoryBody({
           {payload.placeName} · {payload.crop.name} · today
         </p>
         <p className="mt-2 font-display text-xl font-semibold leading-snug text-balance text-foreground sm:text-2xl">
-          {payload.headline}
+          {payload.headlineKey
+            ? t(payload.headlineKey, payload.headlineParams)
+            : payload.headline}
         </p>
       </section>
 
@@ -64,14 +66,17 @@ export function AdvisoryBody({
 
       <AdvisoryCard
         title={t("a.drying")}
-        question={`Is there a long enough rain-free run to dry ${payload.crop.name.toLowerCase()}?`}
+        question={t("q.drying", { crop: payload.crop.name.toLowerCase() })}
         verdict={drying.best?.verdict ?? "poor"}
         headline={
           drying.best
-            ? `${fmtDate(drying.best.startDate)} → ${fmtDate(drying.best.endDate)} · ${drying.best.days} rain-free days`
+            ? `${fmtDate(drying.best.startDate)} → ${fmtDate(drying.best.endDate)} · ${t("hl.rainFreeDays", { days: drying.best.days })}`
             : drying.closest
-              ? `Longest rain-free run is ${drying.closest.days} day${drying.closest.days === 1 ? "" : "s"} — short of the ${drying.minRunDays} needed`
-              : "No rain-free days in the next 7 days."
+              ? t("hl.dryShort", {
+                  days: `${drying.closest.days} ${drying.closest.days === 1 ? t("st.day") : t("st.days")}`,
+                  needed: drying.minRunDays,
+                })
+              : t("hl.dryNone")
         }
         evidence={dryingWindow?.evidence ?? []}
         sources={[drying.source]}
@@ -95,12 +100,12 @@ export function AdvisoryBody({
 
       <AdvisoryCard
         title={t("a.spraying")}
-        question="When can I apply without losing it to rain?"
+        question={t("q.spraying")}
         verdict={spray.best?.verdict ?? "poor"}
         headline={
           spray.best
-            ? `${fmtDayTime(spray.best.time)} · ${spray.best.rainNext24hMm.toFixed(1)} mm rain in the 24h after`
-            : "No suitable application window in the forecast."
+            ? `${fmtDayTime(spray.best.time)} · ${t("hl.rainAfter", { mm: spray.best.rainNext24hMm.toFixed(1) })}`
+            : t("hl.sprayNone")
         }
         evidence={spray.best?.evidence ?? []}
         sources={spray.sources}

@@ -18,6 +18,9 @@ import {
 } from "@/lib/forecast-source";
 import { diffAdvisories } from "@/lib/diff";
 import { getMonthlyUsage } from "@/lib/db/snapshots";
+import { seasonTimeline } from "@/lib/growth";
+import { gddSincePlanting } from "@/lib/gdd";
+import { findCrop } from "@/lib/crops";
 import type { Usage } from "@/lib/types";
 import type { WeatherAIError } from "@/lib/weatherai";
 
@@ -94,9 +97,30 @@ export async function GET(request: NextRequest) {
 
   const usage = await resolveUsage();
 
+  // Optional planting date lets the demo show the full picture — the season
+  // timeline and growing-degree-days — not just the weather-only advisories.
+  const plantingDate = sp.get("planted");
+  const today = resolved.forecast.days[0]?.date ?? "";
+  const validPlanting =
+    plantingDate && /^\d{4}-\d{2}-\d{2}$/.test(plantingDate) && plantingDate < today
+      ? plantingDate
+      : null;
+  const season = validPlanting ? seasonTimeline(cropId ?? "maize", validPlanting, today) : null;
+  const gdd = validPlanting
+    ? await gddSincePlanting({
+        lat: place.lat,
+        lon: place.lon,
+        plantingDate: validPlanting,
+        baseC: findCrop(cropId).gddBaseC,
+        today,
+      }).catch(() => null)
+    : null;
+
   return Response.json(
     {
       ...payload,
+      season,
+      gdd: gdd ? { gdd: gdd.gdd, throughDate: gdd.throughDate } : null,
       changes,
       meta: {
         fetchedAt: resolved.forecast.fetchedAt,

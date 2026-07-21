@@ -439,30 +439,55 @@ export function bestSprayWindowPerDay(
  * both cards and infer the conclusion — which is exactly the cognitive work
  * the product exists to remove.
  */
+export interface Headline {
+  /** English text — the API contract and the fallback. */
+  text: string;
+  /** Translation key + params so the client can render a localized version. */
+  key: string;
+  params: Record<string, string>;
+}
+
 export function todayHeadline(
   drying: DryingWindow | null,
   spray: SprayWindow | null,
   today: string,
-): string {
+): Headline {
   const dryingStartsToday = drying?.startDate === today;
   const sprayIsToday = spray?.time.slice(0, 10) === today && spray.verdict !== "poor";
 
   if (dryingStartsToday && sprayIsToday) {
-    return "Spread grain to dry today, and spraying is viable — check wind before you go.";
+    return {
+      text: "Spread grain to dry today, and spraying is viable — check wind before you go.",
+      key: "hl.dryAndSpray",
+      params: {},
+    };
   }
   if (dryingStartsToday) {
-    return "Good drying starts today. Spread the harvest.";
+    return { text: "Good drying starts today. Spread the harvest.", key: "hl.dryToday", params: {} };
   }
   if (sprayIsToday) {
-    return "No drying window today, but spraying is viable.";
+    return { text: "No drying window today, but spraying is viable.", key: "hl.sprayToday", params: {} };
   }
   if (drying) {
-    return `Nothing to do today. The next drying window opens ${drying.startDate}.`;
+    return {
+      text: `Nothing to do today. The next drying window opens ${drying.startDate}.`,
+      key: "hl.nextDry",
+      params: { date: drying.startDate },
+    };
   }
   if (spray && spray.verdict !== "poor") {
-    return `Nothing to do today. Next viable spray window is ${spray.time.slice(0, 10)}.`;
+    const d = spray.time.slice(0, 10);
+    return {
+      text: `Nothing to do today. Next viable spray window is ${d}.`,
+      key: "hl.nextSpray",
+      params: { date: d },
+    };
   }
-  return "Nothing to do today, and nothing viable in the 7-day outlook. Keep the harvest covered.";
+  return {
+    text: "Nothing to do today, and nothing viable in the 7-day outlook. Keep the harvest covered.",
+    key: "hl.nothing",
+    params: {},
+  };
 }
 
 /**

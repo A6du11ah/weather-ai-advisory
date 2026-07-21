@@ -153,21 +153,21 @@ describe("todayHeadline", () => {
   };
 
   it("leads with drying when both are available today", () => {
-    expect(todayHeadline(dryToday, sprayToday, "2026-07-20")).toMatch(/Spread grain/);
+    expect(todayHeadline(dryToday, sprayToday, "2026-07-20").text).toMatch(/Spread grain/);
   });
 
   it("points forward when nothing is actionable today", () => {
     const later = { ...dryToday, startDate: "2026-07-24" };
-    expect(todayHeadline(later, null, "2026-07-20")).toMatch(/next drying window opens 2026-07-24/i);
+    expect(todayHeadline(later, null, "2026-07-20").text).toMatch(/next drying window opens 2026-07-24/i);
   });
 
   it("is explicit when the whole outlook is unusable", () => {
-    expect(todayHeadline(null, null, "2026-07-20")).toMatch(/Keep the harvest covered/);
+    expect(todayHeadline(null, null, "2026-07-20").text).toMatch(/Keep the harvest covered/);
   });
 
   it("does not claim a spray window when the best one is poor", () => {
     const poor = { ...sprayToday, verdict: "poor" as const };
-    expect(todayHeadline(null, poor, "2026-07-20")).toMatch(/nothing viable/i);
+    expect(todayHeadline(null, poor, "2026-07-20").text).toMatch(/nothing viable/i);
   });
 });
 

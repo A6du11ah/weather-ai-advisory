@@ -104,6 +104,24 @@ const MESSAGES: Record<Locale, Dict> = {
     "v.avoid": "Avoid",
     "v.dry": "Dry",
     "v.spray": "Spray",
+    "q.drying": "Is there a long enough rain-free run to dry {crop}?",
+    "q.spraying": "When can I apply without losing it to rain?",
+    "hl.dryAndSpray": "Spread grain to dry today, and spraying is viable — check wind before you go.",
+    "hl.dryToday": "Good drying starts today. Spread the harvest.",
+    "hl.sprayToday": "No drying window today, but spraying is viable.",
+    "hl.nextDry": "Nothing to do today. The next drying window opens {date}.",
+    "hl.nextSpray": "Nothing to do today. Next viable spray window is {date}.",
+    "hl.nothing": "Nothing to do today, and nothing viable in the 7-day outlook. Keep the harvest covered.",
+    "hl.rainFreeDays": "{days} rain-free days",
+    "hl.dryShort": "Longest rain-free run is {days} — short of the {needed} needed",
+    "hl.dryNone": "No rain-free days in the next 7 days.",
+    "hl.rainAfter": "{mm} mm rain in the 24h after",
+    "hl.sprayNone": "No suitable application window in the forecast.",
+    "st.dry": "Next dry spell",
+    "st.gdd": "Growing-degree-days",
+    "st.days": "days",
+    "st.day": "day",
+    "st.since": "since planting",
   },
   es: {
     "nav.how": "Cómo funciona",
@@ -175,6 +193,24 @@ const MESSAGES: Record<Locale, Dict> = {
     "v.avoid": "Evitar",
     "v.dry": "Secar",
     "v.spray": "Fumigar",
+    "q.drying": "¿Hay un período sin lluvia lo bastante largo para secar {crop}?",
+    "q.spraying": "¿Cuándo puedo aplicar sin que la lluvia lo arrastre?",
+    "hl.dryAndSpray": "Extiende el grano para secar hoy, y fumigar es viable — revisa el viento antes de ir.",
+    "hl.dryToday": "Hoy empieza un buen secado. Extiende la cosecha.",
+    "hl.sprayToday": "Hoy no hay ventana de secado, pero fumigar es viable.",
+    "hl.nextDry": "Nada que hacer hoy. La próxima ventana de secado se abre el {date}.",
+    "hl.nextSpray": "Nada que hacer hoy. La próxima ventana viable de fumigación es el {date}.",
+    "hl.nothing": "Nada que hacer hoy, y nada viable en los próximos 7 días. Mantén la cosecha cubierta.",
+    "hl.rainFreeDays": "{days} días sin lluvia",
+    "hl.dryShort": "El período sin lluvia más largo es de {days} — menos de los {needed} necesarios",
+    "hl.dryNone": "Sin días sin lluvia en los próximos 7 días.",
+    "hl.rainAfter": "{mm} mm de lluvia en las 24 h siguientes",
+    "hl.sprayNone": "Sin ventana de aplicación adecuada en el pronóstico.",
+    "st.dry": "Próximo período seco",
+    "st.gdd": "Grados-día de crecimiento",
+    "st.days": "días",
+    "st.day": "día",
+    "st.since": "desde la siembra",
   },
   fr: {
     "nav.how": "Comment ça marche",
@@ -246,6 +282,24 @@ const MESSAGES: Record<Locale, Dict> = {
     "v.avoid": "À éviter",
     "v.dry": "Sécher",
     "v.spray": "Traiter",
+    "q.drying": "Y a-t-il une période sans pluie assez longue pour sécher {crop} ?",
+    "q.spraying": "Quand puis-je appliquer sans que la pluie l'emporte ?",
+    "hl.dryAndSpray": "Étalez le grain à sécher aujourd'hui, et le traitement est possible — vérifiez le vent avant d'y aller.",
+    "hl.dryToday": "Un bon séchage commence aujourd'hui. Étalez la récolte.",
+    "hl.sprayToday": "Pas de fenêtre de séchage aujourd'hui, mais le traitement est possible.",
+    "hl.nextDry": "Rien à faire aujourd'hui. La prochaine fenêtre de séchage s'ouvre le {date}.",
+    "hl.nextSpray": "Rien à faire aujourd'hui. La prochaine fenêtre de traitement possible est le {date}.",
+    "hl.nothing": "Rien à faire aujourd'hui, et rien de possible sur 7 jours. Gardez la récolte à l'abri.",
+    "hl.rainFreeDays": "{days} jours sans pluie",
+    "hl.dryShort": "La plus longue période sans pluie est de {days} — moins que les {needed} nécessaires",
+    "hl.dryNone": "Aucun jour sans pluie dans les 7 prochains jours.",
+    "hl.rainAfter": "{mm} mm de pluie dans les 24 h suivantes",
+    "hl.sprayNone": "Aucune fenêtre d'application adéquate dans les prévisions.",
+    "st.dry": "Prochaine période sèche",
+    "st.gdd": "Degrés-jours de croissance",
+    "st.days": "jours",
+    "st.day": "jour",
+    "st.since": "depuis le semis",
   },
   pt: {
     "nav.how": "Como funciona",
@@ -317,6 +371,24 @@ const MESSAGES: Record<Locale, Dict> = {
     "v.avoid": "Evitar",
     "v.dry": "Secar",
     "v.spray": "Pulverizar",
+    "q.drying": "Há um período sem chuva longo o bastante para secar {crop}?",
+    "q.spraying": "Quando posso aplicar sem que a chuva leve embora?",
+    "hl.dryAndSpray": "Espalhe o grão para secar hoje, e pulverizar é viável — confira o vento antes de ir.",
+    "hl.dryToday": "Uma boa secagem começa hoje. Espalhe a colheita.",
+    "hl.sprayToday": "Sem janela de secagem hoje, mas pulverizar é viável.",
+    "hl.nextDry": "Nada a fazer hoje. A próxima janela de secagem abre em {date}.",
+    "hl.nextSpray": "Nada a fazer hoje. A próxima janela viável de pulverização é em {date}.",
+    "hl.nothing": "Nada a fazer hoje, e nada viável nos próximos 7 dias. Mantenha a colheita coberta.",
+    "hl.rainFreeDays": "{days} dias sem chuva",
+    "hl.dryShort": "O maior período sem chuva é de {days} — menos que os {needed} necessários",
+    "hl.dryNone": "Sem dias sem chuva nos próximos 7 dias.",
+    "hl.rainAfter": "{mm} mm de chuva nas 24 h seguintes",
+    "hl.sprayNone": "Sem janela de aplicação adequada na previsão.",
+    "st.dry": "Próximo período seco",
+    "st.gdd": "Graus-dia de crescimento",
+    "st.days": "dias",
+    "st.day": "dia",
+    "st.since": "desde o plantio",
   },
   sw: {
     "nav.how": "Jinsi inavyofanya kazi",
@@ -797,8 +869,21 @@ export function useLocale(): Locale {
   );
 }
 
-/** Translate a key for the current locale, falling back to English. */
-export function useT(): (key: string) => string {
+export type TParams = Record<string, string | number>;
+
+/**
+ * Translate a key for the current locale, falling back to English, with simple
+ * {placeholder} interpolation for the dynamic advisory templates.
+ */
+export function useT(): (key: string, params?: TParams) => string {
   const locale = useLocale();
-  return (key: string) => MESSAGES[locale]?.[key] ?? MESSAGES.en[key] ?? key;
+  return (key: string, params?: TParams) => {
+    let s = MESSAGES[locale]?.[key] ?? MESSAGES.en[key] ?? key;
+    if (params) {
+      for (const [k, v] of Object.entries(params)) {
+        s = s.split(`{${k}}`).join(String(v));
+      }
+    }
+    return s;
+  };
 }

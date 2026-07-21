@@ -17,6 +17,8 @@ function advisory(opts: {
     stationId: "test",
     crop: { id: "maize", name: opts.cropName ?? "Maize", note: "", minRunDays: 3, storageMoisturePct: 13.5 },
     headline: "",
+    headlineKey: "",
+    headlineParams: {},
     current: { time: "2026-07-20T12:00", tempC: 20, windKph: 8, windDirDeg: 0, isDay: true, code: 1 },
     days: [
       { date: "2026-07-20", tempMinC: 15, tempMaxC: maxTemp, precipMm: 0, code: 1 },
