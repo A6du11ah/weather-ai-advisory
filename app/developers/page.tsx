@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/app/_components/site-header";
 import { SiteFooter } from "@/app/_components/site-footer";
+import { PageIntro } from "@/app/_components/page-intro";
 import { PRESETS } from "@/lib/places";
 import { CROPS } from "@/lib/crops";
 
@@ -26,14 +27,7 @@ export default function Developers() {
     <>
       <SiteHeader />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:py-14">
-        <h1 className="font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-          Build on the advisory
-        </h1>
-        <p className="mt-3 max-w-2xl text-lg text-ink-body">
-          The same engine that powers the app is exposed as a versioned,
-          CORS-enabled JSON API — a reference for the co-ops, lenders, and input
-          suppliers who would embed this advice in their own product.
-        </p>
+        <PageIntro titleKey="dev.title" introKey="dev.intro" />
 
         <section className="mt-8">
           <h2 className="font-display text-xl font-semibold text-foreground">Endpoint</h2>

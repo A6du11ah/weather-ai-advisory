@@ -18,6 +18,7 @@ import {
   fmtDayTime,
   type GddInfo,
 } from "./advisory-ui";
+import { useT } from "@/lib/i18n";
 
 export function AdvisoryBody({
   payload,
@@ -30,6 +31,7 @@ export function AdvisoryBody({
   meta: React.ReactNode;
   gdd?: GddInfo | null;
 }) {
+  const t = useT();
   const drying = payload.advisories.drying;
   const spray = payload.advisories.spray;
   const dryingWindow = drying.best ?? drying.closest ?? null;
@@ -61,7 +63,7 @@ export function AdvisoryBody({
       )}
 
       <AdvisoryCard
-        title="Drying"
+        title={t("a.drying")}
         question={`Is there a long enough rain-free run to dry ${payload.crop.name.toLowerCase()}?`}
         verdict={drying.best?.verdict ?? "poor"}
         headline={
@@ -92,7 +94,7 @@ export function AdvisoryBody({
       </AdvisoryCard>
 
       <AdvisoryCard
-        title="Spraying"
+        title={t("a.spraying")}
         question="When can I apply without losing it to rain?"
         verdict={spray.best?.verdict ?? "poor"}
         headline={

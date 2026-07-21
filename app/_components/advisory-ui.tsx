@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Shared advisory presentation.
  *
@@ -15,6 +17,13 @@ import type { Evidence, Verdict } from "@/lib/rules";
 import type { AdvisoryChange } from "@/lib/diff";
 import type { FrostWatch, HeatWatch, WorkWindow } from "@/lib/conditions";
 import { describeCode } from "@/lib/weathercode";
+import { useT } from "@/lib/i18n";
+
+const VERDICT_KEY: Record<Verdict, string> = {
+  good: "v.go",
+  marginal: "v.marginal",
+  poor: "v.avoid",
+};
 
 export interface GddInfo {
   gdd: number;
@@ -106,6 +115,7 @@ export function ConditionsPanel({
   };
   gdd?: GddInfo | null;
 }) {
+  const t = useT();
   const { frost, heat, work } = conditions;
   const hasAlert = frost || heat;
   const hasTile = work || gdd;
@@ -116,7 +126,7 @@ export function ConditionsPanel({
 
   return (
     <section className="card p-5 sm:p-6">
-      <h2 className="font-display text-lg font-semibold">Conditions &amp; watches</h2>
+      <h2 className="font-display text-lg font-semibold">{t("a.conditions")}</h2>
 
       {hasAlert && (
         <div className="mt-4 space-y-2.5">
@@ -226,6 +236,7 @@ export function fmtDayTime(iso: string): string {
 
 export function VerdictBadge({ verdict }: { verdict: Verdict }) {
   const v = VERDICT[verdict];
+  const t = useT();
   // Filled at full saturation — the verdict is the payload, so it is
   // deliberately the loudest thing on the card.
   return (
@@ -233,7 +244,7 @@ export function VerdictBadge({ verdict }: { verdict: Verdict }) {
       className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] shadow-sm ${v.solid}`}
     >
       <span aria-hidden="true">{v.glyph}</span>
-      {v.label}
+      {t(VERDICT_KEY[verdict])}
     </span>
   );
 }
@@ -364,6 +375,7 @@ export function ChangesBanner({ changes }: { changes: AdvisoryChange[] }) {
 }
 
 export function ForecastStrip({ days }: { days: DayPoint[] }) {
+  const t = useT();
   // Bar length scales to the wettest day, so the rain column reads as a small
   // chart you can scan straight down to find the dry stretch.
   const maxRain = Math.max(2, ...days.map((d) => d.precipMm));
@@ -373,7 +385,7 @@ export function ForecastStrip({ days }: { days: DayPoint[] }) {
 
   return (
     <section className="card p-5 sm:p-6">
-      <h2 className="font-display text-lg font-semibold">7-day outlook</h2>
+      <h2 className="font-display text-lg font-semibold">{t("a.outlook")}</h2>
       <ul className="mt-3 divide-y divide-border">
         {days.map((d, i) => {
           const dry = isDry(d.precipMm);

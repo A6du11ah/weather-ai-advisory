@@ -8,6 +8,7 @@ import { VERDICT } from "@/app/_components/advisory-ui";
 import { MapView } from "@/app/_components/map/map-view";
 import { LocationSearch } from "@/app/_components/map/location-search";
 import { FarmQr } from "@/app/_components/farm-qr";
+import { useT } from "@/lib/i18n";
 import type { Verdict } from "@/lib/rules";
 import type { FieldTask } from "@/lib/field-context";
 
@@ -39,6 +40,7 @@ function fmt(iso: string): string {
 }
 
 export default function FarmDashboard({ farmKey }: { farmKey: string }) {
+  const t = useT();
   const [data, setData] = useState<FarmData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -77,7 +79,7 @@ export default function FarmDashboard({ farmKey }: { farmKey: string }) {
       <header className="flex items-start justify-between gap-4">
         <div>
           <Link href="/" className="text-sm text-muted underline-offset-2 hover:underline">
-            ← Home
+            ← {t("a.home")}
           </Link>
           <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight sm:text-4xl">
             {data?.farm.name ?? "My farm"}
@@ -94,7 +96,7 @@ export default function FarmDashboard({ farmKey }: { farmKey: string }) {
           {data.tasks.length > 0 && (
             <section className="mt-6 rounded-2xl border border-brand/20 bg-brand-weak p-5">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-brand/80">
-                This week
+                {t("a.week")}
               </h2>
               <ul className="mt-2 space-y-1.5">
                 {data.tasks.slice(0, 6).map((t, i) => (
@@ -113,7 +115,7 @@ export default function FarmDashboard({ farmKey }: { farmKey: string }) {
 
           <div className="mt-8 flex items-center justify-between">
             <h2 className="font-display text-xl font-semibold">
-              Fields{" "}
+              {t("a.fields")}{" "}
               <span className="font-normal text-muted">({data.fields.length})</span>
             </h2>
             <button
@@ -125,7 +127,7 @@ export default function FarmDashboard({ farmKey }: { farmKey: string }) {
                   : "bg-brand text-on-brand hover:opacity-90"
               }`}
             >
-              {showAdd ? "Close" : "Add field"}
+              {showAdd ? t("a.close") : t("a.add")}
             </button>
           </div>
 
@@ -155,8 +157,8 @@ export default function FarmDashboard({ farmKey }: { farmKey: string }) {
                       </p>
                     </div>
                     <div className="flex shrink-0 gap-1.5">
-                      <VerdictPill label="Dry" verdict={f.drying} />
-                      <VerdictPill label="Spray" verdict={f.spray} />
+                      <VerdictPill label={t("v.dry")} verdict={f.drying} />
+                      <VerdictPill label={t("v.spray")} verdict={f.spray} />
                     </div>
                   </div>
 
@@ -187,7 +189,7 @@ export default function FarmDashboard({ farmKey }: { farmKey: string }) {
             ))}
             {data.fields.length === 0 && !showAdd && (
               <li className="rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted">
-                No fields yet. Add your first to get advisories tuned to it.
+                {t("a.empty")}
               </li>
             )}
           </ul>

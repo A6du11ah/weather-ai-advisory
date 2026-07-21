@@ -1,6 +1,7 @@
 "use client";
 
 import type { SeasonTimeline as Season } from "@/lib/growth";
+import { useT } from "@/lib/i18n";
 
 interface Activity {
   id: number;
@@ -68,6 +69,7 @@ export function SeasonTimeline({
   tasks: UpcomingTask[];
   today: string;
 }) {
+  const t = useT();
   const milestones: Milestone[] = [];
 
   milestones.push({
@@ -133,7 +135,7 @@ export function SeasonTimeline({
   return (
     <section className="card p-5 sm:p-6">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="font-display text-lg font-semibold">The season</h2>
+        <h2 className="font-display text-lg font-semibold">{t("a.season")}</h2>
         <span className="text-sm text-muted">
           day {season.daysAfterPlanting} of {season.daysAfterPlanting + season.daysToHarvest}
         </span>

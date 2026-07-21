@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
+import { useT } from "@/lib/i18n";
 
 /**
  * "Open on your phone" — a scannable QR of the farm's private link.
@@ -15,6 +16,7 @@ import QRCode from "qrcode";
  * the private link never leaves the browser.
  */
 export function FarmQr({ farmKey }: { farmKey: string }) {
+  const t = useT();
   const [svg, setSvg] = useState<string | null>(null);
   const [url, setUrl] = useState("");
   const [copied, setCopied] = useState(false);
@@ -44,11 +46,8 @@ export function FarmQr({ farmKey }: { farmKey: string }) {
 
   return (
     <section className="card p-5 sm:p-6">
-      <h2 className="font-display text-lg font-semibold">Open on your phone</h2>
-      <p className="mt-1 text-sm text-ink-body">
-        Scan this to open your farm on your phone — the private link is built in,
-        no sign-in needed.
-      </p>
+      <h2 className="font-display text-lg font-semibold">{t("a.phone")}</h2>
+      <p className="mt-1 text-sm text-ink-body">{t("a.phoneDesc")}</p>
 
       <div className="mt-4 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
         <div className="rounded-xl border border-border bg-surface-raised p-3">
@@ -72,12 +71,9 @@ export function FarmQr({ farmKey }: { farmKey: string }) {
             onClick={copy}
             className="mt-2 inline-flex min-h-[40px] cursor-pointer items-center rounded-xl border border-border bg-surface px-4 text-sm font-medium hover:bg-surface-muted"
           >
-            {copied ? "Copied ✓" : "Copy link"}
+            {copied ? "✓" : t("a.copy")}
           </button>
-          <p className="mt-2 text-xs text-muted">
-            Anyone with this link can view and edit the farm — treat it like a
-            key.
-          </p>
+          <p className="mt-2 text-xs text-muted">{t("a.keyNote")}</p>
         </div>
       </div>
     </section>

@@ -9,6 +9,7 @@ import type { ForecastOrigin } from "@/lib/forecast-source";
 import type { SeasonTimeline as Season } from "@/lib/growth";
 import { AdvisoryBody } from "@/app/_components/advisory-body";
 import { SeasonTimeline } from "@/app/_components/season-timeline";
+import { useT } from "@/lib/i18n";
 
 interface Activity {
   id: number;
@@ -57,6 +58,7 @@ export default function FieldDetail({
   fieldId: string;
 }) {
   const router = useRouter();
+  const t = useT();
   const [data, setData] = useState<FieldData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +95,7 @@ export default function FieldDetail({
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:py-12">
       <Link href={`/farm/${farmKey}`} className="text-sm text-muted underline-offset-2 hover:underline">
-        ← Back to farm
+        ← {t("a.back")}
       </Link>
 
       {loading && !data && (
@@ -175,13 +177,13 @@ export default function FieldDetail({
           {/* Activity log */}
           <section className="mt-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-base font-semibold">Activity log</h2>
+              <h2 className="text-base font-semibold">{t("a.log")}</h2>
               <button
                 type="button"
                 onClick={() => setShowLog((v) => !v)}
                 className="min-h-[44px] cursor-pointer rounded-lg border border-border bg-surface px-4 text-sm font-medium hover:bg-surface-muted"
               >
-                {showLog ? "Close" : "Log activity"}
+                {showLog ? t("a.close") : t("a.logBtn")}
               </button>
             </div>
 

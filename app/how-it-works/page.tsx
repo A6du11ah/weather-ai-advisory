@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteHeader } from "@/app/_components/site-header";
 import { SiteFooter } from "@/app/_components/site-footer";
+import { PageIntro } from "@/app/_components/page-intro";
 
 export const metadata: Metadata = {
   title: "How it works — Seasonwise",
@@ -32,16 +33,9 @@ export default function HowItWorks() {
     <>
       <SiteHeader />
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-10 sm:py-14">
-        <h1 className="font-display text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
-          The science behind the advice
-        </h1>
-        <p className="mt-3 max-w-2xl text-lg text-ink-body">
-          Seasonwise does a few things well on the two variables the weather
-          data actually provides — temperature and rain — and shows its working
-          so you can check it against local practice.
-        </p>
+        <PageIntro titleKey="how.title" introKey="how.intro" />
 
-        <div className="mt-10">
+        <div className="mt-4">
           <Block eyebrow="Drying" title="Rain-free windows and aflatoxin">
             <p>
               Maize is commonly harvested at 18–25% moisture and dried for
