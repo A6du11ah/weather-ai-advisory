@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
- * Field Window design tokens — "calm & trustworthy" with depth.
+ * Seasonwise design tokens — "calm & trustworthy" with depth.
  *
  * Three rules fix the earlier pale/flat look:
  *   1. The canvas (--background/--field) is DEEPER than cards (--surface). You
@@ -67,8 +67,14 @@
   --radius: 1.25rem;
 }
 
+/*
+ * Dark palette. Applied when the system prefers dark AND the user has not
+ * forced light, OR when the user has explicitly chosen dark via the toggle
+ * (data-theme="dark"). The explicit choice always wins so the toggle works in
+ * both directions. The token block is shared between the two selectors.
+ */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --field: #14170f;
     --background: #14170f;
     --surface: #1c2016;
@@ -80,19 +86,16 @@
     --ink-faint: #7e7e6c;
     --border: #333a28;
     --border-strong: #47503a;
-
     --brand: #6fb07e;
     --brand-deep: #4e9060;
     --brand-mid: #82c091;
     --brand-weak: #1b2417;
     --brand-tint: #223020;
     --on-brand: #0e1a10;
-
     --amber: #e0a94a;
     --amber-deep: #e0a94a;
     --amber-tint: #33280f;
     --on-amber: #1a1204;
-
     --good: #63b879;
     --good-bg: #1b2e1e;
     --good-ink: #bfe3c6;
@@ -102,17 +105,54 @@
     --poor: #d97a5e;
     --poor-bg: #331c14;
     --poor-ink: #f3c4b4;
-
     --rain: #5e9bbe;
     --rain-track: #262b1c;
-
     --focus-ring: #e0a94a;
     --shadow: 0, 0, 0;
-
     --e1: 0 0 0 1px var(--border), inset 0 1px 0 rgba(255, 255, 255, 0.03);
     --e2: 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
     --e3: 0 8px 28px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.07);
   }
+}
+
+:root[data-theme="dark"] {
+  --field: #14170f;
+  --background: #14170f;
+  --surface: #1c2016;
+  --surface-raised: #242a1d;
+  --surface-muted: #10130b;
+  --foreground: #f2eedf;
+  --ink-body: #d8d3c2;
+  --muted: #a5a491;
+  --ink-faint: #7e7e6c;
+  --border: #333a28;
+  --border-strong: #47503a;
+  --brand: #6fb07e;
+  --brand-deep: #4e9060;
+  --brand-mid: #82c091;
+  --brand-weak: #1b2417;
+  --brand-tint: #223020;
+  --on-brand: #0e1a10;
+  --amber: #e0a94a;
+  --amber-deep: #e0a94a;
+  --amber-tint: #33280f;
+  --on-amber: #1a1204;
+  --good: #63b879;
+  --good-bg: #1b2e1e;
+  --good-ink: #bfe3c6;
+  --marginal: #e0a94a;
+  --marginal-bg: #33280f;
+  --marginal-ink: #f0d49a;
+  --poor: #d97a5e;
+  --poor-bg: #331c14;
+  --poor-ink: #f3c4b4;
+  --rain: #5e9bbe;
+  --rain-track: #262b1c;
+  --focus-ring: #e0a94a;
+  --shadow: 0, 0, 0;
+  --e1: 0 0 0 1px var(--border), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  --e2: 0 2px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  --e3: 0 8px 28px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.07);
 }
 
 @theme inline {

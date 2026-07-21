@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/app/_components/site-header";
 import { SiteFooter } from "@/app/_components/site-footer";
 import { PRESETS } from "@/lib/places";
+import { CROPS } from "@/lib/crops";
 
 export const metadata: Metadata = {
-  title: "Developers — Field Window API",
+  title: "Developers — Seasonwise API",
   description:
     "A versioned, CORS-enabled advisory API. Fetch drying and spray verdicts for a station as JSON, described by OpenAPI.",
 };
@@ -39,30 +40,77 @@ export default function Developers() {
           <pre className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface-muted p-4 font-mono text-sm text-foreground">
             {example}
           </pre>
-          <p className="mt-2 text-sm text-ink-body">
-            Stations: {PRESETS.map((p) => p.id).join(", ")}. Optional{" "}
-            <code className="rounded bg-surface-muted px-1 py-0.5 font-mono text-xs">crop</code>{" "}
-            query parameter re-scores the same forecast.
-          </p>
         </section>
 
         <section className="mt-8">
-          <h2 className="font-display text-xl font-semibold text-foreground">Response</h2>
+          <h2 className="font-display text-xl font-semibold text-foreground">Parameters</h2>
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted">
+                  <th className="py-2 pr-4 font-semibold">Name</th>
+                  <th className="py-2 pr-4 font-semibold">In</th>
+                  <th className="py-2 pr-4 font-semibold">Required</th>
+                  <th className="py-2 font-semibold">Values</th>
+                </tr>
+              </thead>
+              <tbody className="font-mono">
+                <tr className="border-b border-border/60">
+                  <td className="py-2 pr-4">station</td>
+                  <td className="py-2 pr-4 text-muted">path</td>
+                  <td className="py-2 pr-4 text-poor">yes</td>
+                  <td className="py-2 text-ink-body">{PRESETS.map((p) => p.id).join(", ")}</td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4">crop</td>
+                  <td className="py-2 pr-4 text-muted">query</td>
+                  <td className="py-2 pr-4 text-muted">no</td>
+                  <td className="py-2 text-ink-body">{CROPS.map((c) => c.id).join(", ")} (default maize)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="mt-8">
+          <h2 className="font-display text-xl font-semibold text-foreground">Example response</h2>
           <pre className="mt-3 overflow-x-auto rounded-xl border border-border bg-surface-muted p-4 font-mono text-xs leading-relaxed text-foreground">
             {sample}
           </pre>
         </section>
 
         <section className="mt-8">
-          <h2 className="font-display text-xl font-semibold text-foreground">Spec</h2>
+          <h2 className="font-display text-xl font-semibold text-foreground">Response fields</h2>
+          <dl className="mt-3 divide-y divide-border/60 text-sm">
+            {[
+              ["apiVersion", "string", "Contract version, currently 1.0."],
+              ["station", "object", "id, name, country, lat, lon."],
+              ["crop", "object", "id and display name of the crop scored."],
+              ["headline", "string", "The single what-to-do-today sentence."],
+              ["drying", "object", "verdict (good/marginal/poor), startDate, endDate, days, score."],
+              ["spray", "object", "verdict, time, score, rainNext24hMm, effectiveWashMm."],
+              ["changes", "array", "Day-over-day changes: {kind, summary}, empty if none."],
+            ].map(([field, type, desc]) => (
+              <div key={field} className="grid grid-cols-[8rem_5rem_1fr] gap-3 py-2.5">
+                <dt className="font-mono text-foreground">{field}</dt>
+                <dd className="font-mono text-muted">{type}</dd>
+                <dd className="text-ink-body">{desc}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <section className="mt-8">
+          <h2 className="font-display text-xl font-semibold text-foreground">Machine-readable spec</h2>
           <p className="mt-2 text-ink-body">
-            The full contract is described by OpenAPI 3:
+            The full contract is also served as OpenAPI 3 JSON for code
+            generation and tooling:
           </p>
           <a
             href="/api/v1/openapi.json"
-            className="mt-3 inline-flex min-h-[48px] items-center rounded-xl bg-brand px-6 text-sm font-semibold text-on-brand hover:opacity-90"
+            className="mt-3 inline-flex min-h-[44px] items-center rounded-xl border border-border bg-surface px-4 text-sm font-semibold text-foreground hover:bg-surface-muted"
           >
-            Open the OpenAPI spec →
+            openapi.json ↗
           </a>
         </section>
 

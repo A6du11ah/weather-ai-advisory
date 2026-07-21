@@ -1,4 +1,4 @@
-# Field Window
+# Seasonwise
 
 A weather-driven companion for a working farm, built on the
 [WeatherAI](https://weather-ai.co) API. The forecast is the engine; the product
@@ -23,7 +23,7 @@ the weather API is central, but it is no longer the only thing the app knows.
 Every verdict shows the measurements behind it, so it can be checked rather
 than trusted.
 
-**Live:** https://weather-ai-advisory.vercel.app
+**Live:** https://season-wise.vercel.app
 
 ---
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import FieldDetail from "./field-detail";
 
 export const metadata: Metadata = {
-  title: "Field — Field Window",
+  title: "Field — Seasonwise",
   robots: { index: false },
 };
 

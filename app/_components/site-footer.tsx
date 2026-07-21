@@ -15,9 +15,7 @@ export function SiteFooter() {
               <span className="rounded-lg bg-on-brand/10 p-1">
                 <LogoMark size={24} />
               </span>
-              <span className="font-display text-lg font-semibold">
-                Field <span className="italic">Window</span>
-              </span>
+              <span className="font-display text-lg font-semibold">Seasonwise</span>
             </div>
             <p className="mt-3 max-w-xs text-sm text-on-brand/75">
               Your season, one field at a time. Weather-driven decisions from

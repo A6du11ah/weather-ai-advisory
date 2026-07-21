@@ -12,7 +12,7 @@ import { findPreset } from "@/lib/places";
 import { buildAdvisory } from "@/lib/advisory";
 import { resolveForecast } from "@/lib/forecast-source";
 
-export const alt = "Field Window advisory";
+export const alt = "Seasonwise advisory";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -32,7 +32,7 @@ export default async function Image(props: {
   const { station } = await props.params;
   const preset = findPreset(station);
 
-  let headline = "Field Window";
+  let headline = "Seasonwise";
   let sub = "Grain drying and spray advisories";
   let accent = COLORS.muted;
 
@@ -80,7 +80,7 @@ export default async function Image(props: {
             }}
           />
           <div style={{ fontSize: "30px", color: COLORS.muted, letterSpacing: "-0.01em" }}>
-            Field Window
+            Seasonwise
           </div>
         </div>
 

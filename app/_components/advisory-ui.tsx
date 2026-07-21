@@ -13,7 +13,165 @@
 import type { DayPoint } from "@/lib/types";
 import type { Evidence, Verdict } from "@/lib/rules";
 import type { AdvisoryChange } from "@/lib/diff";
+import type { FrostWatch, HeatWatch, WorkWindow } from "@/lib/conditions";
 import { describeCode } from "@/lib/weathercode";
+
+export interface GddInfo {
+  gdd: number;
+  throughDate: string;
+}
+
+function fmtShort(iso: string): string {
+  return new Date(`${iso.slice(0, 10)}T00:00:00`).toLocaleDateString(undefined, {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+}
+
+/** A labelled stat with a coloured top-accent bar — the "instrument panel" read. */
+function StatTile({
+  label,
+  value,
+  unit,
+  accent,
+}: {
+  label: string;
+  value: string;
+  unit?: string;
+  accent: "brand" | "amber";
+}) {
+  return (
+    <div className="card relative overflow-hidden p-4">
+      <div
+        className={`absolute inset-x-0 top-0 h-[3px] ${accent === "amber" ? "bg-amber" : "bg-brand"}`}
+        aria-hidden="true"
+      />
+      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted">
+        {label}
+      </p>
+      <p className="mt-1 font-display text-2xl font-semibold tabular-nums text-foreground">
+        {value}
+        {unit && <span className="ml-1 text-sm font-normal text-muted">{unit}</span>}
+      </p>
+    </div>
+  );
+}
+
+function AlertCard({
+  tone,
+  icon,
+  title,
+  body,
+}: {
+  tone: "warn" | "info";
+  icon: string;
+  title: string;
+  body: string;
+}) {
+  const cls =
+    tone === "warn"
+      ? "border-marginal/40 bg-marginal-bg"
+      : "border-brand/25 bg-brand-tint";
+  const spine = tone === "warn" ? "bg-marginal" : "bg-brand";
+  const ink = tone === "warn" ? "text-marginal-ink" : "text-foreground";
+  return (
+    <div className={`relative overflow-hidden rounded-2xl border p-4 pl-5 ${cls}`}>
+      <div className={`absolute inset-y-0 left-0 w-1 ${spine}`} aria-hidden="true" />
+      <div className="flex items-start gap-2.5">
+        <span aria-hidden="true" className="text-lg leading-none">{icon}</span>
+        <div>
+          <p className={`text-sm font-semibold ${ink}`}>{title}</p>
+          <p className="mt-0.5 text-sm text-ink-body">{body}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Conditions & watches beyond the two headline decisions — frost, heat, the
+ * next field-work window, and (on a field with a planting date) accumulated
+ * growing-degree-days. Alerts show only when relevant; the tiles are always
+ * useful.
+ */
+export function ConditionsPanel({
+  conditions,
+  gdd,
+}: {
+  conditions: {
+    frost: FrostWatch | null;
+    heat: HeatWatch | null;
+    work: WorkWindow | null;
+  };
+  gdd?: GddInfo | null;
+}) {
+  const { frost, heat, work } = conditions;
+  const hasAlert = frost || heat;
+  const hasTile = work || gdd;
+  if (!hasAlert && !hasTile) return null;
+
+  const leadPhrase = (days: number) =>
+    days === 0 ? "tonight" : days === 1 ? "tomorrow night" : `in ${days} days`;
+
+  return (
+    <section className="card p-5 sm:p-6">
+      <h2 className="font-display text-lg font-semibold">Conditions &amp; watches</h2>
+
+      {hasAlert && (
+        <div className="mt-4 space-y-2.5">
+          {frost && (
+            <AlertCard
+              tone="warn"
+              icon="❄"
+              title={
+                frost.severity === "frost"
+                  ? `Frost risk ${leadPhrase(frost.leadDays)}`
+                  : `Cold night ${leadPhrase(frost.leadDays)}`
+              }
+              body={`Low of ${frost.minC.toFixed(0)}°C on ${fmtShort(frost.date)}. ${
+                frost.severity === "frost"
+                  ? "Protect sensitive crops."
+                  : "Keep an eye on it."
+              }`}
+            />
+          )}
+          {heat && (
+            <AlertCard
+              tone="warn"
+              icon="▲"
+              title={`Heat stress ${heat.leadDays === 0 ? "today" : `in ${heat.leadDays} days`}`}
+              body={`${heat.maxC.toFixed(0)}°C on ${fmtShort(heat.date)}${
+                heat.count > 1 ? `, ${heat.count} hot days this week` : ""
+              }. Water if you can; worst during flowering.`}
+            />
+          )}
+        </div>
+      )}
+
+      {hasTile && (
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          {work && (
+            <StatTile
+              label="Next dry spell"
+              value={`${work.days}`}
+              unit={work.days === 1 ? "day" : "days"}
+              accent="brand"
+            />
+          )}
+          {gdd && (
+            <StatTile
+              label="Growing-degree-days"
+              value={gdd.gdd.toLocaleString()}
+              unit="since planting"
+              accent="amber"
+            />
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
 
 export interface SourceRef {
   label: string;

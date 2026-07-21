@@ -28,6 +28,7 @@ interface FieldData {
   advisory: AdvisoryPayload;
   context: FieldContext;
   season: Season | null;
+  gdd: { gdd: number; throughDate: string } | null;
   meta: { origin: ForecastOrigin; ageHours: number | null };
   activities: Activity[];
 }
@@ -157,6 +158,7 @@ export default function FieldDetail({
             <AdvisoryBody
               payload={data.advisory}
               changes={[]}
+              gdd={data.gdd}
               meta={
                 <footer className="card px-5 py-4 text-xs text-muted">
                   <p>

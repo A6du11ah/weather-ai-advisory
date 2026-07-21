@@ -10,14 +10,14 @@ import type { MetadataRoute } from "next";
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Field Window — grain drying & spray advisories",
-    short_name: "Field Window",
+    name: "Seasonwise — your season, one field at a time",
+    short_name: "Seasonwise",
     description:
-      "When to dry grain safely and when to spray without losing it to rain.",
+      "Weather-driven decisions for each field: when to dry, when to spray, frost and heat watches, and more.",
     start_url: "/",
     display: "standalone",
-    background_color: "#fbfaf7",
-    theme_color: "#1f7a4d",
+    background_color: "#f1ead9",
+    theme_color: "#2e5d3a",
     icons: [
       {
         src: "/icon.svg",

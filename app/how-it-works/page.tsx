@@ -4,7 +4,7 @@ import { SiteHeader } from "@/app/_components/site-header";
 import { SiteFooter } from "@/app/_components/site-footer";
 
 export const metadata: Metadata = {
-  title: "How it works — Field Window",
+  title: "How it works — Seasonwise",
   description:
     "The agronomy behind the advice: grain drying and aflatoxin, pesticide rainfastness, daylight-gated spraying, and the crop season model.",
 };
@@ -36,7 +36,7 @@ export default function HowItWorks() {
           The science behind the advice
         </h1>
         <p className="mt-3 max-w-2xl text-lg text-ink-body">
-          Field Window does a few things well on the two variables the weather
+          Seasonwise does a few things well on the two variables the weather
           data actually provides — temperature and rain — and shows its working
           so you can check it against local practice.
         </p>
@@ -63,7 +63,7 @@ export default function HowItWorks() {
           <Block eyebrow="Spraying" title="Rainfastness is about timing, not just amount">
             <p>
               Pesticide efficacy loss is greatest when rain falls soon after
-              application and diminishes as the deposit dries. Field Window
+              application and diminishes as the deposit dries. Seasonwise
               scores each candidate hour with a{" "}
               <strong>time-weighted</strong> washoff — rain one hour after
               application counts far more than rain a day later — rather than a
@@ -90,7 +90,7 @@ export default function HowItWorks() {
 
           <Block eyebrow="Honesty" title="What it deliberately does not do">
             <p>
-              The forecast data has no humidity, so Field Window does not fake
+              The forecast data has no humidity, so Seasonwise does not fake
               humidity-based models (Delta-T spray gating, leaf-wetness disease
               risk), and says so where it matters. Wind is a current
               observation, not a forecast, so it is shown as a check to repeat at

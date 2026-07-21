@@ -5,7 +5,7 @@ name: Refresh forecasts
 # Vercel Cron because the Hobby plan caps cron at one run per day.
 #
 # Requires two repository secrets:
-#   DEPLOYMENT_URL  e.g. https://weather-ai-advisory.vercel.app
+#   DEPLOYMENT_URL  e.g. https://season-wise.vercel.app
 #   CRON_SECRET     the same value set on the Vercel deployment
 
 on:

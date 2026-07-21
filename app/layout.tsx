@@ -25,15 +25,15 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.SITE_URL ?? "https://weather-ai-advisory.vercel.app",
+    process.env.SITE_URL ?? "https://season-wise.vercel.app",
   ),
-  title: "Field Window — your season, one field at a time",
+  title: "Seasonwise — your season, one field at a time",
   description:
     "A weather-driven companion for a working farm. Track each field from planting to storage, know its stage, and get the two decisions that matter: when to dry and when to spray.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "Field Window",
+    title: "Seasonwise",
     statusBarStyle: "default",
   },
 };
@@ -54,7 +54,16 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${lora.variable} ${inter.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        {/* Apply the stored theme before first paint so the toggle never flashes. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('seasonwise.theme');if(t){document.documentElement.dataset.theme=t}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

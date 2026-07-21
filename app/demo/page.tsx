@@ -4,7 +4,7 @@ import { SiteFooter } from "@/app/_components/site-footer";
 import DemoView from "./demo-view";
 
 export const metadata: Metadata = {
-  title: "Live demo — Field Window",
+  title: "Live demo — Seasonwise",
   description:
     "See the grain-drying and spray advisories for a set of demo locations and crops, no account needed.",
 };

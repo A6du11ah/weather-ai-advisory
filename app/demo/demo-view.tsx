@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { PRESETS, type Preset } from "@/lib/places";
 import { CROPS, DEFAULT_CROP, type CropProfile } from "@/lib/crops";
 import type { AdvisoryPayload } from "@/lib/advisory";
@@ -116,40 +115,30 @@ export default function DemoView() {
         )}
 
         {!loading && data && (
-          <>
-            <AdvisoryBody
-              payload={data}
-              changes={data.changes}
-              meta={
-                <footer className="card px-5 py-4 text-xs text-muted">
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <AdvisoryBody
+            payload={data}
+            changes={data.changes}
+            meta={
+              <footer className="card px-5 py-4 text-xs text-muted">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                  <span>
+                    Updated{" "}
+                    {new Date(data.meta.fetchedAt).toLocaleTimeString(undefined, {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                  <span>· {data.meta.origin}</span>
+                  {data.meta.usage && (
                     <span>
-                      Updated{" "}
-                      {new Date(data.meta.fetchedAt).toLocaleTimeString(undefined, {
-                        hour: "numeric",
-                        minute: "2-digit",
-                      })}
+                      · {data.meta.usage.remaining}/{data.meta.usage.limit} API
+                      requests left
                     </span>
-                    <span>· {data.meta.origin}</span>
-                    {data.meta.usage && (
-                      <span>
-                        · {data.meta.usage.remaining}/{data.meta.usage.limit} API
-                        requests left
-                      </span>
-                    )}
-                  </div>
-                </footer>
-              }
-            />
-            <div className="mt-4">
-              <Link
-                href={`/s/${preset.id}?crop=${crop.id}`}
-                className="inline-flex min-h-[44px] items-center rounded-xl border border-border bg-surface px-4 text-sm hover:bg-surface-muted"
-              >
-                Open {preset.name}&rsquo;s shareable page →
-              </Link>
-            </div>
-          </>
+                  )}
+                </div>
+              </footer>
+            }
+          />
         )}
       </div>
     </div>

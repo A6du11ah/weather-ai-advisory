@@ -22,6 +22,14 @@ import {
   type WindCheck,
 } from "./rules";
 import { findCrop, type CropProfile } from "./crops";
+import {
+  fieldWorkWindow,
+  frostWatch,
+  heatStress,
+  type FrostWatch,
+  type HeatWatch,
+  type WorkWindow,
+} from "./conditions";
 import type { AdvisorySnapshotLite } from "./diff";
 import type { CurrentPoint, DayPoint, Forecast, Place } from "./types";
 
@@ -60,6 +68,12 @@ export interface AdvisoryPayload {
       windCheck: WindCheck;
       sources: SourceRef[];
     };
+  };
+  /** Additional temperature/rain-only watches beyond the two headline decisions. */
+  conditions: {
+    frost: FrostWatch | null;
+    heat: HeatWatch | null;
+    work: WorkWindow | null;
   };
 }
 
@@ -125,6 +139,11 @@ export function buildAdvisory(opts: {
         windCheck: currentWindCheck(forecast.current.windKph),
         sources: [SOURCES.rainfast, SOURCES.sprayDrift],
       },
+    },
+    conditions: {
+      frost: frostWatch(forecast.days, crop),
+      heat: heatStress(forecast.days, crop),
+      work: fieldWorkWindow(forecast.days),
     },
   };
 }

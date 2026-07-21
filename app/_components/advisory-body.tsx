@@ -11,20 +11,24 @@ import type { AdvisoryChange } from "@/lib/diff";
 import {
   AdvisoryCard,
   ChangesBanner,
+  ConditionsPanel,
   ForecastStrip,
   VERDICT,
   fmtDate,
   fmtDayTime,
+  type GddInfo,
 } from "./advisory-ui";
 
 export function AdvisoryBody({
   payload,
   changes,
   meta,
+  gdd,
 }: {
   payload: AdvisoryPayload;
   changes: AdvisoryChange[];
   meta: React.ReactNode;
+  gdd?: GddInfo | null;
 }) {
   const drying = payload.advisories.drying;
   const spray = payload.advisories.spray;
@@ -137,6 +141,8 @@ export function AdvisoryBody({
           </p>
         </div>
       </AdvisoryCard>
+
+      <ConditionsPanel conditions={payload.conditions} gdd={gdd} />
 
       <ForecastStrip days={payload.days} />
 

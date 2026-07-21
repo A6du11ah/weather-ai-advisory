@@ -57,6 +57,7 @@ function advisory(opts: {
         sources: [],
       },
     },
+    conditions: { frost: null, heat: null, work: null },
   };
 }
 

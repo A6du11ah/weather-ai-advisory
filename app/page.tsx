@@ -2,7 +2,7 @@ import Link from "next/link";
 import { SiteHeader } from "./_components/site-header";
 import { SiteFooter } from "./_components/site-footer";
 import FarmEntry from "./_components/farm-entry";
-import { LogoMark } from "./_components/logo";
+import { Hero } from "./_components/hero";
 
 /** Small labelled section heading with an amber tick — turns the scroll into chapters. */
 function SectionHead({ eyebrow, title }: { eyebrow: string; title: string }) {
@@ -21,8 +21,8 @@ function SectionHead({ eyebrow, title }: { eyebrow: string; title: string }) {
 
 const FEATURES = [
   {
-    title: "Two decisions, not a wall of numbers",
-    body: "When the harvest can dry safely, and when to spray without losing it to rain — each with the measurements and cited agronomy behind it.",
+    title: "Decisions, not a wall of numbers",
+    body: "When to dry and when to spray, plus frost and heat watches, the next dry spell to work the field, and growing-degree-days — each with the reasoning shown.",
   },
   {
     title: "A season, not a snapshot",
@@ -34,7 +34,7 @@ const FEATURES = [
   },
   {
     title: "Honest about its limits",
-    body: "It does a few things well on temperature and rain, and tells you what it can't see. No faked precision.",
+    body: "It does several things well on temperature and rain, and tells you what it can't see. No faked precision.",
   },
 ];
 
@@ -49,45 +49,7 @@ export default function Home() {
     <>
       <SiteHeader />
 
-      {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-96 opacity-70"
-          style={{
-            background:
-              "radial-gradient(ellipse 60% 100% at 50% 0%, var(--brand-weak), transparent 70%)",
-          }}
-          aria-hidden="true"
-        />
-        <div className="relative mx-auto w-full max-w-5xl px-4 pt-16 pb-12 text-center sm:pt-24">
-          <span className="mx-auto inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-ink-body shadow-sm">
-            <LogoMark size={16} /> A weather companion for a working farm
-          </span>
-          <h1 className="mx-auto mt-6 max-w-3xl font-display text-4xl font-semibold leading-[1.05] tracking-tight text-balance text-foreground sm:text-6xl">
-            Your season, one field at a time.
-          </h1>
-          <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-ink-body">
-            Field Window turns the forecast into the two decisions that move a
-            season — when to dry, and when to spray — tuned to each field&rsquo;s
-            crop, stage, and history.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-            <Link
-              href="#start"
-              className="inline-flex min-h-[48px] items-center rounded-xl bg-brand px-6 text-sm font-semibold text-on-brand shadow-sm transition-opacity hover:opacity-90"
-            >
-              Start your farm — free
-            </Link>
-            <Link
-              href="/demo"
-              className="inline-flex min-h-[48px] items-center rounded-xl border border-border bg-surface px-6 text-sm font-semibold text-foreground transition-colors hover:bg-surface-muted"
-            >
-              See the live demo
-            </Link>
-          </div>
-          <p className="mt-3 text-xs text-muted">No sign-up. Works on a cheap phone.</p>
-        </div>
-      </section>
+      <Hero />
 
       {/* Features */}
       <section className="mx-auto w-full max-w-5xl px-4 py-12">

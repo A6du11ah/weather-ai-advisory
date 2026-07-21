@@ -1,10 +1,9 @@
 /**
- * Field Window logomark.
+ * Seasonwise logomark.
  *
- * A window pane whose crossbar is the horizon: harvest-amber sun in the sky
- * above, tilled furrows receding to a vanishing point below. One glyph carries
- * the name ("window"), the function ("a weather window on your field") and the
- * palette (green frame, amber moment).
+ * Minimal: a sprout — two leaves on a stem — under a small amber sun. Growth
+ * through the season, in the brand's green and amber. No container, three
+ * shapes, legible from a favicon to a hero.
  */
 
 export function LogoMark({
@@ -14,43 +13,33 @@ export function LogoMark({
   size?: number;
   className?: string;
 }) {
-  // The vertical mullion only reads above ~24px; drop it when small.
-  const showMullion = size >= 26;
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 32 32"
       fill="none"
-      strokeLinecap="round"
-      strokeLinejoin="round"
       className={className}
       aria-hidden="true"
     >
-      <rect
-        x="4"
-        y="4"
-        width="24"
-        height="24"
-        rx="7"
-        fill="var(--surface-raised)"
-        stroke="var(--brand)"
-        strokeWidth="2"
-      />
-      {/* horizon */}
-      <line x1="6.5" y1="19" x2="25.5" y2="19" stroke="var(--brand)" strokeWidth="2" />
-      {showMullion && (
-        <line x1="16" y1="6.5" x2="16" y2="19" stroke="var(--brand)" strokeWidth="1.5" opacity="0.55" />
-      )}
-      {/* furrows to the vanishing point */}
+      {/* sun */}
+      <circle cx="16" cy="6.5" r="3" fill="var(--amber)" />
+      {/* stem */}
       <path
-        d="M9,25.5 L15.4,19.5 M16,25.5 L16,19.5 M23,25.5 L16.6,19.5"
+        d="M16 29 V 15.5"
         stroke="var(--brand)"
-        strokeWidth="1.5"
-        opacity="0.85"
+        strokeWidth="2.4"
+        strokeLinecap="round"
       />
-      {/* the amber moment */}
-      <circle cx="11" cy="12" r="3" fill="var(--amber)" />
+      {/* leaves */}
+      <path
+        d="M16 19c-2.6 1.4-6 .3-7.5-3 3.6-1 6.6.2 7.5 3Z"
+        fill="var(--brand)"
+      />
+      <path
+        d="M16 15.5c2.6 1.4 6 .3 7.5-3-3.6-1-6.6.2-7.5 3Z"
+        fill="var(--brand)"
+      />
     </svg>
   );
 }
@@ -63,13 +52,13 @@ export function Logo({
   className?: string;
 }) {
   return (
-    <span className={`inline-flex items-center gap-2.5 ${className}`}>
+    <span className={`inline-flex items-center gap-2 ${className}`}>
       <LogoMark size={size} />
       <span
         className="font-display font-semibold tracking-tight text-foreground"
-        style={{ fontSize: size * 0.66 }}
+        style={{ fontSize: size * 0.62 }}
       >
-        Field <span className="italic">Window</span>
+        Seasonwise
       </span>
     </span>
   );

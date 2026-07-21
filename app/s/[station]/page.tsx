@@ -40,9 +40,9 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const { station } = await props.params;
   const preset = findPreset(station);
-  if (!preset) return { title: "Unknown location — Field Window" };
+  if (!preset) return { title: "Unknown location — Seasonwise" };
 
-  const title = `${preset.name} — Field Window`;
+  const title = `${preset.name} — Seasonwise`;
   const description = `Grain drying and spray advisories for ${preset.name}, ${preset.country}.`;
   return {
     title,

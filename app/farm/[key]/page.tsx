@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import FarmDashboard from "./farm-dashboard";
 
 export const metadata: Metadata = {
-  title: "My farm — Field Window",
+  title: "My farm — Seasonwise",
   robots: { index: false }, // private per-key pages must not be indexed
 };
 

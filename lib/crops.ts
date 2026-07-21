@@ -29,6 +29,19 @@ export interface CropProfile {
   sprayMinTempC: number;
   /** Upper bound — above this, evaporation and volatilisation losses rise. */
   sprayMaxTempC: number;
+  /**
+   * Overnight low at or below which cold/frost damage is a real risk for this
+   * crop. Tender crops sit near 0–2°C; hardier ones tolerate a light frost.
+   */
+  frostThresholdC: number;
+  /** Daytime high above which heat stress becomes a concern, worst at flowering. */
+  heatThresholdC: number;
+  /**
+   * Base temperature for growing-degree-day accumulation. Below this the crop
+   * makes no developmental progress. Standard values: maize/rice/groundnut 10,
+   * wheat 0, coffee ~10.
+   */
+  gddBaseC: number;
   /** One-line note shown under the selector. */
   note: string;
 }
@@ -43,6 +56,9 @@ export const CROPS: CropProfile[] = [
     goodTempC: 25,
     sprayMinTempC: 10,
     sprayMaxTempC: 30,
+    frostThresholdC: 2,
+    heatThresholdC: 35,
+    gddBaseC: 10,
     note: "Field drying from ~20% to a 13.5% storage target. Aflatoxin risk rises if partly dried grain is re-wetted.",
   },
   {
@@ -54,6 +70,9 @@ export const CROPS: CropProfile[] = [
     goodTempC: 28,
     sprayMinTempC: 12,
     sprayMaxTempC: 32,
+    frostThresholdC: 5,
+    heatThresholdC: 35,
+    gddBaseC: 10,
     note: "Dries to ~14%. Rapid drying in high heat causes kernel fissuring, so very hot days are not strictly better.",
   },
   {
@@ -65,6 +84,9 @@ export const CROPS: CropProfile[] = [
     goodTempC: 22,
     sprayMinTempC: 8,
     sprayMaxTempC: 28,
+    frostThresholdC: 0,
+    heatThresholdC: 32,
+    gddBaseC: 0,
     note: "Dries faster than maize; a 2-day window is often enough. Target ~13% for storage.",
   },
   {
@@ -76,6 +98,9 @@ export const CROPS: CropProfile[] = [
     goodTempC: 28,
     sprayMinTempC: 12,
     sprayMaxTempC: 30,
+    frostThresholdC: 4,
+    heatThresholdC: 34,
+    gddBaseC: 10,
     note: "Slow sun-drying on beds to ~11%. Needs a long settled spell; interrupted drying causes mould and off-flavours.",
   },
   {
@@ -87,6 +112,9 @@ export const CROPS: CropProfile[] = [
     goodTempC: 27,
     sprayMinTempC: 10,
     sprayMaxTempC: 30,
+    frostThresholdC: 2,
+    heatThresholdC: 35,
+    gddBaseC: 10,
     note: "Dries to ~8%. Highly aflatoxin-prone — re-wetting during drying is the main contamination pathway.",
   },
 ];

@@ -16,7 +16,7 @@ export function GET(request: NextRequest) {
   const spec = {
     openapi: "3.0.3",
     info: {
-      title: "Field Window Advisory API",
+      title: "Seasonwise Advisory API",
       version: "1.0.0",
       description:
         "Grain-drying and spray-timing advisories derived from the WeatherAI forecast API, with day-over-day change detection. A reference implementation of what a WeatherAI B2B customer would embed.",
