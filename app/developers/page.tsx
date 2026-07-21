@@ -103,14 +103,17 @@ export default function Developers() {
         <section className="mt-8">
           <h2 className="font-display text-xl font-semibold text-foreground">Machine-readable spec</h2>
           <p className="mt-2 text-ink-body">
-            The full contract is also served as OpenAPI 3 JSON for code
-            generation and tooling:
+            This page is the human reference. For code generation and tooling,
+            the same contract is served as raw OpenAPI 3 JSON (opens in a new
+            tab):
           </p>
           <a
             href="/api/v1/openapi.json"
+            target="_blank"
+            rel="noreferrer"
             className="mt-3 inline-flex min-h-[44px] items-center rounded-xl border border-border bg-surface px-4 text-sm font-semibold text-foreground hover:bg-surface-muted"
           >
-            openapi.json ↗
+            openapi.json (raw) ↗
           </a>
         </section>
 

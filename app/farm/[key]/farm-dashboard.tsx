@@ -7,6 +7,7 @@ import { PRESETS } from "@/lib/places";
 import { VERDICT } from "@/app/_components/advisory-ui";
 import { MapView } from "@/app/_components/map/map-view";
 import { LocationSearch } from "@/app/_components/map/location-search";
+import { FarmQr } from "@/app/_components/farm-qr";
 import type { Verdict } from "@/lib/rules";
 import type { FieldTask } from "@/lib/field-context";
 
@@ -191,10 +192,9 @@ export default function FarmDashboard({ farmKey }: { farmKey: string }) {
             )}
           </ul>
 
-          <p className="mt-8 rounded-lg border border-border bg-surface px-4 py-3 text-xs text-muted">
-            This farm lives at a private link. Bookmark this page to return —
-            anyone with the link can view and edit it.
-          </p>
+          <div className="mt-8">
+            <FarmQr farmKey={farmKey} />
+          </div>
         </>
       )}
     </main>

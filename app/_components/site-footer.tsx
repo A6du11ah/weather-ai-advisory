@@ -13,7 +13,7 @@ export function SiteFooter() {
           <div>
             <div className="flex items-center gap-2.5">
               <span className="rounded-lg bg-on-brand/10 p-1">
-                <LogoMark size={24} />
+                <LogoMark size={24} tone="light" />
               </span>
               <span className="font-display text-lg font-semibold">Seasonwise</span>
             </div>
@@ -39,8 +39,17 @@ export function SiteFooter() {
               Developers
             </h3>
             <ul className="mt-3 space-y-2 text-sm">
-              <li><Link href="/developers" className="text-on-brand/85 hover:text-on-brand">API overview</Link></li>
-              <li><a href="/api/v1/openapi.json" className="text-on-brand/85 hover:text-on-brand">OpenAPI spec</a></li>
+              <li><Link href="/developers" className="text-on-brand/85 hover:text-on-brand">API reference</Link></li>
+              <li>
+                <a
+                  href="/api/v1/openapi.json"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-on-brand/85 hover:text-on-brand"
+                >
+                  openapi.json (raw) ↗
+                </a>
+              </li>
             </ul>
           </div>
         </div>

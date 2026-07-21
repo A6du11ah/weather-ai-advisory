@@ -9,10 +9,14 @@
 export function LogoMark({
   size = 28,
   className = "",
+  tone = "brand",
 }: {
   size?: number;
   className?: string;
+  /** "brand" = green sprout (default). "light" = cream sprout for use on a coloured band. */
+  tone?: "brand" | "light";
 }) {
+  const sprout = tone === "light" ? "var(--on-brand)" : "var(--brand)";
   return (
     <svg
       width={size}
@@ -25,21 +29,10 @@ export function LogoMark({
       {/* sun */}
       <circle cx="16" cy="6.5" r="3" fill="var(--amber)" />
       {/* stem */}
-      <path
-        d="M16 29 V 15.5"
-        stroke="var(--brand)"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
+      <path d="M16 29 V 15.5" stroke={sprout} strokeWidth="2.4" strokeLinecap="round" />
       {/* leaves */}
-      <path
-        d="M16 19c-2.6 1.4-6 .3-7.5-3 3.6-1 6.6.2 7.5 3Z"
-        fill="var(--brand)"
-      />
-      <path
-        d="M16 15.5c2.6 1.4 6 .3 7.5-3-3.6-1-6.6.2-7.5 3Z"
-        fill="var(--brand)"
-      />
+      <path d="M16 19c-2.6 1.4-6 .3-7.5-3 3.6-1 6.6.2 7.5 3Z" fill={sprout} />
+      <path d="M16 15.5c2.6 1.4 6 .3 7.5-3-3.6-1-6.6.2-7.5 3Z" fill={sprout} />
     </svg>
   );
 }
